@@ -50,7 +50,7 @@
             transform-style: preserve-3d; border: 1px solid transparent;
         }
         .habit-item:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .habit-item.build.completed { background-color: rgba(10, 242, 154, 0.15); border-color: rgba(10, 242, 154, 0.4); }
+        .habit-item.build.completed { background-color: rgba(10, 242, 154, 0.3); border-color: rgba(10, 242, 154, 0.5); }
         .habit-item.build.uncompleted { background-color: rgba(255, 59, 59, 0.15); border-color: rgba(255, 59, 59, 0.4); }
         .habit-item.build.skipped { background-color: rgba(250, 204, 21, 0.15); border-color: rgba(250, 204, 21, 0.4); }
         .habit-item.quit.on-streak { background-color: rgba(37, 99, 235, 0.15); border-color: rgba(37, 99, 235, 0.4); }
@@ -205,7 +205,7 @@
             apiKey: "AIzaSyCNlPgcBvEgkXlpdgpESR4HpmODjmELTYQ",
             authDomain: "habit-tracker-f6492.firebaseapp.com",
             projectId: "habit-tracker-f6492",
-            storageBucket: "habit-tracker-f6492.firebasestorage.app",
+            storageBucket: "habit-tracker-f6492.appspot.com",
             messagingSenderId: "383071915072",
             appId: "1:383071915072:web:1d397c7ff97ab847fee3a5"
         };
@@ -669,23 +669,15 @@
                         if (tempStreak > longestStreak) longestStreak = tempStreak;
                     }
                 }
-                let lastPeriodId = nowId;
-                while(true) {
-                    if (completions[lastPeriodId]) {
-                        currentStreak++;
-                    } else if (!skips[lastPeriodId]) {
-                        if (lastPeriodId !== nowId) currentStreak = 0;
-                        break;
-                    }
-                    const prevPeriodId = getPreviousPeriodId(lastPeriodId, type);
-                    if (!prevPeriodId) break; 
-                    lastPeriodId = prevPeriodId;
+                let pId = nowId;
+                if (!completions[pId]) {
+                    pId = getPreviousPeriodId(pId, type);
                 }
-                if(!completions[nowId]) {
-                    const yesterdayId = getPreviousPeriodId(nowId, type);
-                    if (yesterdayId && !completions[yesterdayId] && !skips[yesterdayId]) {
-                        currentStreak = 0;
+                while (pId && (completions[pId] || skips[pId])) {
+                    if (completions[pId]) {
+                        currentStreak++;
                     }
+                    pId = getPreviousPeriodId(pId, type);
                 }
                 return { streak: currentStreak, longestStreak, moneySaved: 0, timeSaved: 0 };
             } else {
@@ -1175,7 +1167,7 @@
                 } else {
                     buttonHtml = `<button data-item-id="${item.id}" class="buy-item-btn w-full font-bold py-2 px-4 rounded-lg ${userProfile.points < item.cost ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-500 text-white'}">Buy (${item.cost} XP)</button>`;
                 }
-                return `<div class="p-4 rounded-lg bg-white/30 flex flex-col text-center"><div class="text-3xl mb-2">${item.type === 'theme' ? '🎨' : '🎵'}</div><h4 class="font-bold flex-grow">${item.name}</h4><p class="text-xs text-gray-600 mb-4">${item.desc}</p>${buttonHtml}</div>`;
+                return `<div class="p-4 rounded-lg bg-white/30 flex flex-col text-center"><div class="text-3xl mb-2">${item.type === 'theme' ? '🎨' : '�'}</div><h4 class="font-bold flex-grow">${item.name}</h4><p class="text-xs text-gray-600 mb-4">${item.desc}</p>${buttonHtml}</div>`;
             }).join('');
         }
         storeItemsList.addEventListener('click', async e => {
@@ -1397,3 +1389,4 @@
     </script>
 </body>
 </html>
+�
