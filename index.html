@@ -357,13 +357,16 @@
         async function loadData() {
             loadingState.style.display = 'block';
             habitList.innerHTML = '';
+            
+            const defaultProfile = { achievements: [], points: 0, level: 1, lastVisitDate: null, routines: [], activeChallenges: [], unlockedRewards: { theme: 'default' }, todos: [] };
+
             if (!currentUser) {
                 // For logged-out users, load from localStorage
                 const localData = localStorage.getItem('glowHabits_local');
                 if (localData) {
                     const data = JSON.parse(localData);
                     allHabits = data.habits || [];
-                    userProfile = data.profile || {};
+                    userProfile = { ...defaultProfile, ...data.profile }; // Merge with default
                 } else {
                     resetLocalData();
                 }
@@ -372,16 +375,21 @@
             }
         
             const userDocRef = db.collection('users').doc(currentUser.uid);
-            const doc = await userDocRef.get();
-        
-            if (doc.exists) {
-                const data = doc.data();
-                allHabits = data.habits || [];
-                userProfile = data.profile || {};
-            } else {
-                // New user in Firestore
+            try {
+                const doc = await userDocRef.get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    allHabits = data.habits || [];
+                    userProfile = { ...defaultProfile, ...data.profile }; // Merge with default
+                } else {
+                    // New user in Firestore
+                    resetLocalData();
+                    await saveData(); // Create initial document in Firestore
+                }
+            } catch (error) {
+                console.error("Error loading data from Firestore:", error);
+                showAlertModal("Could not load your cloud data. Using local backup.");
                 resetLocalData();
-                await saveData(); // Create initial document in Firestore
             }
             initializeAppUI();
         }
@@ -1366,26 +1374,36 @@
 
         // --- Initialization ---
         function initializeAppUI() {
-            applyTheme(userProfile.unlockedRewards.theme || 'default');
-            autoSkipMissedHabits(); 
-            saveData(); 
-            setupSounds();
-            updateRoutineDropdown();
-            renderFilteredHabits();
-            renderAchievements();
-            renderTemplates();
-            updateGamificationWidget();
-            updateClock();
-            setMotivationalQuote();
-            setInterval(updateClock, 60000);
-            loadingState.style.display = 'none';
+            try {
+                applyTheme(userProfile.unlockedRewards.theme || 'default');
+                autoSkipMissedHabits(); 
+                saveData(); 
+                setupSounds();
+                updateRoutineDropdown();
+                renderFilteredHabits();
+                renderAchievements();
+                renderTemplates();
+                updateGamificationWidget();
+                updateClock();
+                setMotivationalQuote();
+                setInterval(updateClock, 60000);
+                loadingState.style.display = 'none';
 
-            notificationStatusEl.textContent = Notification.permission;
-            if (Notification.permission === 'default') {
-                requestNotifyBtn.classList.remove('hidden');
-                requestNotifyBtn.onclick = () => Notification.requestPermission().then(p => notificationStatusEl.textContent = p);
+                notificationStatusEl.textContent = Notification.permission;
+                if (Notification.permission === 'default') {
+                    requestNotifyBtn.classList.remove('hidden');
+                    requestNotifyBtn.onclick = () => Notification.requestPermission().then(p => notificationStatusEl.textContent = p);
+                }
+            } catch (error) {
+                console.error("Initialization Error:", error);
+                showAlertModal("A critical error occurred while starting the app. Please refresh.");
             }
-            
+        }
+        
+        // --- Global Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Event listeners for modals and other static elements are set up here
+            // to ensure they are only attached once.
             exportBtn.addEventListener('click', () => {
                 try {
                     const dataStr = JSON.stringify({ habits: allHabits, profile: userProfile }, null, 2);
@@ -1429,10 +1447,8 @@
                 reader.readAsText(file);
                 importInput.value = '';
             });
-        }
+        });
         
-        // The main entry point is now the onAuthStateChanged listener
-        // It will call initializeAppUI once the auth state is known.
     </script>
 </body>
 </html>
