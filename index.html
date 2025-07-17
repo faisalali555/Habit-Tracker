@@ -3,23 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glow Habit Tracker - Professional Edition</title>
+    <title>Glow Habit Tracker - Advanced Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-    
-    <!-- Firebase Libraries -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
     <style>
         :root {
             --orange-glow: #ff8c00; --pink-glow: #ff007f; --green-glow: #0af29a;
             --teal-glow: #00c4ff; --red-glow: #ff3b3b; --blue-glow: #2563eb; --purple-glow: #9333ea;
             --yellow-glow: #facc15;
-            /* Default Theme Colors */
             --bg-gradient-start: #e0c3fc;
             --bg-gradient-end: #8ec5fc;
         }
@@ -31,13 +27,11 @@
             color: #2d3748;
             transition: background-image 0.5s ease;
         }
-        /* --- Themes --- */
         body[data-theme='ocean-blue'] { --bg-gradient-start: #2af598; --bg-gradient-end: #009efd; }
         body[data-theme='sunset-orange'] { --bg-gradient-start: #f83600; --bg-gradient-end: #f9d423; }
         body[data-theme='forest-green'] { --bg-gradient-start: #d4fc79; --bg-gradient-end: #96e6a1; }
         body[data-theme='midnight-purple'] { --bg-gradient-start: #372b47; --bg-gradient-end: #8559da; color: #f0f2f5; }
-        body[data-theme='midnight-purple'] .glass-container, body[data-theme='midnight-purple'] .top-glass-widget { color: #2d3748; }
-
+        body[data-theme='midnight-purple'] .glass-container, body[data-theme='midnight-purple'] .top-glass-widget, body[data-theme='midnight-purple'] select option { color: #2d3748; }
         .glass-container, .top-glass-widget {
             background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.7);
@@ -56,14 +50,11 @@
             transform-style: preserve-3d; border: 1px solid transparent;
         }
         .habit-item:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        
         .habit-item.build.completed { background-color: rgba(10, 242, 154, 0.15); border-color: rgba(10, 242, 154, 0.4); }
         .habit-item.build.uncompleted { background-color: rgba(255, 59, 59, 0.15); border-color: rgba(255, 59, 59, 0.4); }
         .habit-item.build.skipped { background-color: rgba(250, 204, 21, 0.15); border-color: rgba(250, 204, 21, 0.4); }
-        
         .habit-item.quit.on-streak { background-color: rgba(37, 99, 235, 0.15); border-color: rgba(37, 99, 235, 0.4); }
         .habit-item.quit.slipped { background-color: rgba(255, 59, 59, 0.15); border-color: rgba(255, 59, 59, 0.4); }
-        
         .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.2); border-radius: 10px; }
@@ -76,25 +67,27 @@
         input[type="date"]::-webkit-calendar-picker-indicator, input[type="datetime-local"]::-webkit-calendar-picker-indicator { cursor: pointer; filter: invert(0.5); }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        
         @keyframes pulse-glow {
             0% { box-shadow: 0 0 0 rgba(10, 242, 154, 0); }
             50% { box-shadow: 0 0 12px rgba(10, 242, 154, 0.7); }
             100% { box-shadow: 0 0 0 rgba(10, 242, 154, 0); }
         }
-        .pulse-glow-animation {
-            animation: pulse-glow 1s ease-in-out;
+        .pulse-glow-animation { animation: pulse-glow 1s ease-in-out; }
+        @keyframes tada {
+            from { transform: scale3d(1, 1, 1); }
+            10%, 20% { transform: scale3d(.9, .9, .9) rotate3d(0, 0, 1, -3deg); }
+            30%, 50%, 70%, 90% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg); }
+            40%, 60%, 80% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg); }
+            to { transform: scale3d(1, 1, 1); }
         }
-
-        .unlocked-animation { animation: tada 1s ease; border-color: var(--orange-glow) !important; box-shadow: 0 0 15px var(--orange-glow); }
+        .unlocked-animation { animation: tada 1s ease; border-color: var(--green-glow) !important; box-shadow: 0 0 15px var(--green-glow); }
+        .achievement-unlocked { background-color: rgba(10, 242, 154, 0.15) !important; border-color: rgba(10, 242, 154, 0.4) !important; }
         .progress-bar { background-color: #ddd; border-radius: 10px; overflow: hidden; width: 100%; height: 10px; }
         .progress-bar-inner { height: 100%; background-image: linear-gradient(45deg, var(--teal-glow), var(--green-glow)); border-radius: 10px; transition: width 0.5s ease-in-out; }
     </style>
 </head>
 <body data-theme="default">
-
     <div class="w-full h-screen flex flex-col p-2">
-        <!-- Top Bar with Emojis -->
         <div class="flex-shrink-0 flex justify-between items-center mb-2 gap-4">
             <div class="flex items-center gap-2 md:gap-3">
                 <div id="clock-widget" class="top-glass-widget interactive-3d px-4 py-2 flex items-center gap-3">
@@ -112,8 +105,6 @@
                 <button id="settings-btn" title="Settings" class="interactive-3d p-3 rounded-full bg-white/40 hover:bg-white/60 transition-all text-xl">⚙️</button>
                 <div id="gamification-widget" class="top-glass-widget interactive-3d px-4 py-2 text-sm"></div>
                 <button id="store-btn" title="Rewards Store" class="interactive-3d p-3 rounded-full bg-white/40 hover:bg-white/60 transition-all text-xl">🛍️</button>
-                
-                <!-- Auth Section -->
                 <div id="auth-section" class="top-glass-widget interactive-3d p-2">
                     <button id="google-signin-btn" class="flex items-center gap-2 bg-white/50 hover:bg-white/80 rounded-full px-4 py-2 text-sm font-semibold">
                         <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C42.022,36.218,44,30.561,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
@@ -127,17 +118,13 @@
                         </button>
                     </div>
                 </div>
-
             </div>
         </div>
-
-        <!-- Main Container -->
         <div id="main-container" class="glass-container flex-grow flex flex-col p-6 md:p-8 overflow-hidden">
             <header class="flex-shrink-0 mb-2 text-center">
                 <h1 class="text-4xl md:text-5xl font-bold">Glow Habit Tracker</h1>
                 <p id="motivational-quote" class="mt-2 italic">Build habits that shine.</p>
             </header>
-            
             <div class="flex-shrink-0 flex justify-between items-center mb-4">
                 <button id="templates-btn" class="interactive-3d bg-purple-500/80 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-lg text-sm">💡 Templates</button>
                 <div id="main-filter-btns" class="bg-black/5 p-1 rounded-full flex items-center">
@@ -145,16 +132,15 @@
                     <button data-filter="archived" class="filter-btn font-semibold text-sm px-3 py-1 rounded-full transition-all">Archived</button>
                 </div>
             </div>
-            
-            <!-- Reordered Form Layout -->
             <div id="add-habit-form-container" class="flex-shrink-0 mb-4">
                 <form id="add-habit-form" class="space-y-3">
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
                         <select id="habit-goal" class="interactive-3d w-full bg-white/50 border-2 border-transparent focus:border-orange-400/50 focus:ring-0 rounded-xl px-4 py-3 outline-none"><option value="build">Build Good Habit</option><option value="quit">Quit Bad Habit</option></select>
                         <select id="habit-type" class="interactive-3d w-full bg-white/50 border-2 border-transparent focus:border-orange-400/50 focus:ring-0 rounded-xl px-4 py-3 outline-none"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
                         <input type="number" id="habit-duration" placeholder="Duration (min)" class="interactive-3d w-full bg-white/50 border-2 border-transparent focus:border-orange-400/50 focus:ring-0 rounded-xl px-4 py-3 outline-none">
-                        <select id="habit-category" class="interactive-3d w-full bg-white/50 border-2 border-transparent focus:border-orange-400/50 focus:ring-0 rounded-xl px-4 py-3 outline-none"><option value="General">General</option><option value="Health">Health</option><option value="Work">Work</option><option value="Learning">Learning</option><option value="Personal">Personal</option></select>
+                        <select id="habit-category" class="interactive-3d w-full bg-white/50 border-2 border-transparent focus:border-orange-400/50 focus:ring-0 rounded-xl px-4 py-3 outline-none"><option value="General">General</option><option value="Health">Health</option><option value="Work">Work</option><option value="Learning">Learning</option><option value="Personal">Personal</option><option value="Finance">Finance</option><option value="Creative">Creative</option></select>
                         <select id="habit-routine" class="interactive-3d w-full bg-white/50 border-2 border-transparent focus:border-orange-400/50 focus:ring-0 rounded-xl px-4 py-3 outline-none"><option value="">No Routine</option></select>
+                        <select id="habit-difficulty" class="interactive-3d w-full bg-white/50 border-2 border-transparent focus:border-orange-400/50 focus:ring-0 rounded-xl px-4 py-3 outline-none"><option value="medium">Medium</option><option value="easy">Easy</option><option value="hard">Hard</option></select>
                     </div>
                     <div id="quit-habit-costs" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3">
                         <input type="number" id="habit-cost" placeholder="Cost per slip" class="interactive-3d w-full bg-white/50 border-2 border-transparent focus:border-orange-400/50 focus:ring-0 rounded-xl px-4 py-3 outline-none">
@@ -171,33 +157,50 @@
                     </div>
                 </form>
             </div>
-
             <div id="habit-list" class="flex-grow space-y-3 overflow-y-auto pr-2 custom-scrollbar">
                  <div id="loading-state" class="text-center text-gray-600 py-8"><p>Loading your habits...</p></div>
             </div>
         </div>
     </div>
-
-    <!-- Modals -->
-    <div id="confirm-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-6 w-full max-w-sm text-center"><p id="modal-text" class="mb-6"></p><div class="flex justify-center gap-4"><button id="confirm-yes" class="interactive-3d bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg">Yes</button><button id="confirm-no" class="interactive-3d bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg">Cancel</button></div></div></div>
+    <div id="confirm-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-6 w-full max-w-sm text-center"><p id="modal-text" class="mb-6"></p><div id="confirm-buttons" class="flex justify-center gap-4"><button id="confirm-yes" class="interactive-3d bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg">Yes</button><button id="confirm-no" class="interactive-3d bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg">Cancel</button></div></div></div>
     <div id="alert-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-6 w-full max-w-sm text-center"><p id="alert-text" class="mb-6"></p><div class="flex justify-center"><button id="alert-ok" class="interactive-3d bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-8 rounded-lg">OK</button></div></div></div>
     <div id="settings-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-md"><h2 class="text-2xl font-bold mb-6 text-center">Settings</h2><h3 class="text-lg font-semibold mb-3 text-orange-500">Data Management</h3><div class="flex flex-wrap gap-3 mb-6"><button id="export-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Export JSON</button><label class="interactive-3d bg-blue-500/80 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg cursor-pointer">Import JSON<input type="file" id="import-input" class="hidden" accept=".json"></label></div><h3 class="text-lg font-semibold mb-3 text-orange-500">Notifications</h3><div class="flex items-center gap-4 bg-white/20 p-3 rounded-lg"><p>Status: <span id="notification-status" class="font-bold">Unknown</span></p><button id="request-notify-permission-btn" class="interactive-3d bg-orange-500/80 hover:bg-orange-500 text-white font-bold py-1 px-3 rounded-lg hidden">Request Permission</button></div><button id="close-settings-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
     <div id="achievements-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl"><h2 class="text-2xl font-bold mb-6 text-center">Achievements</h2><div id="achievements-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[60vh] overflow-y-auto custom-scrollbar"></div><button id="close-achievements-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
-    <div id="reports-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-8 w-full max-w-4xl"><h2 class="text-2xl font-bold mb-6 text-center">Your Progress Reports</h2><div class="grid md:grid-cols-2 gap-8"><div class="text-center"> <h3 class="font-semibold mb-2">Completions by Category</h3><canvas id="category-chart"></canvas></div><div class="text-center"><h3 class="font-semibold mb-2">Recent Activity</h3><canvas id="activity-chart"></canvas></div></div><button id="close-reports-btn" class="interactive-3d mt-8 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
+    <div id="reports-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4">
+        <div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col">
+            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Your Progress Reports</h2>
+            <div class="flex-grow overflow-y-auto custom-scrollbar px-2">
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div class="text-center p-4 rounded-lg bg-white/20"> 
+                        <h3 class="font-semibold mb-2">Completions by Category</h3>
+                        <canvas id="category-chart"></canvas>
+                    </div>
+                    <div class="text-center p-4 rounded-lg bg-white/20">
+                        <h3 class="font-semibold mb-2">Recent Activity</h3>
+                        <canvas id="activity-chart"></canvas>
+                    </div>
+                </div>
+                <div id="analytics-section">
+                    <h3 class="text-xl font-bold text-center mb-4">Success Patterns</h3>
+                    <div id="analytics-content" class="text-center p-4 bg-white/20 rounded-lg min-h-[120px] flex items-center justify-center">
+                    </div>
+                </div>
+            </div>
+            <div class="flex-shrink-0 mt-4">
+                 <button id="close-reports-btn" class="interactive-3d w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button>
+            </div>
+        </div>
+    </div>
     <div id="history-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col"><h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Habit History</h2><div class="flex-shrink-0 flex flex-wrap gap-3 items-center mb-4 p-2 border-b border-black/10"><input type="date" id="history-date-picker" class="interactive-3d bg-white/50 placeholder-gray-500 border-2 border-transparent focus:border-pink-400/50 focus:ring-0 rounded-xl px-4 py-2 text-sm outline-none"><input type="search" id="history-search-bar" placeholder="Search habits..." class="interactive-3d flex-grow bg-white/50 placeholder-gray-500 border-2 border-transparent focus:border-pink-400/50 focus:ring-0 rounded-xl px-4 py-2 text-sm outline-none"><div id="history-completion-filter-btns" class="bg-black/5 p-1 rounded-full flex items-center"><button data-filter="all" class="filter-btn active font-semibold text-sm px-3 py-1 rounded-full transition-all">All</button><button data-filter="incomplete" class="filter-btn font-semibold text-sm px-3 py-1 rounded-full transition-all">Incomplete</button><button data-filter="completed" class="filter-btn font-semibold text-sm px-3 py-1 rounded-full transition-all">Completed</button><button data-filter="skipped" class="filter-btn font-semibold text-sm px-3 py-1 rounded-full transition-all">Skipped</button></div></div><div id="history-list" class="flex-grow space-y-3 overflow-y-auto pr-2 custom-scrollbar"></div><button id="close-history-btn" class="interactive-3d mt-4 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg flex-shrink-0">Close</button></div></div>
     <div id="reminder-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-6 w-full max-w-sm text-center"><h2 class="text-xl font-bold mb-2">Set Reminder</h2><p id="reminder-habit-name" class="mb-4"></p><input type="hidden" id="reminder-habit-id"><div class="flex flex-col gap-4"><input type="datetime-local" id="reminder-time-input" class="w-full bg-white/50 p-2 rounded-lg border border-black/10" title="Set a specific date and time for a single notification."><button id="save-reminder-btn" class="interactive-3d bg-orange-500/80 hover:bg-orange-500 text-white font-bold py-2 px-4 rounded-lg mt-2">Save Reminder</button><button id="remove-reminder-btn" class="interactive-3d bg-red-500/80 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg">Remove Reminder</button><button id="close-reminder-btn" class="interactive-3d bg-gray-500/80 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Cancel</button></div></div></div>
     <div id="notes-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-6 w-full max-w-lg h-[70vh] flex flex-col"><h2 class="text-2xl font-bold mb-2 text-center">Notes for <span id="notes-habit-name"></span></h2><input type="hidden" id="notes-habit-id"><div id="notes-list" class="flex-grow space-y-2 overflow-y-auto pr-2 custom-scrollbar mb-4 border-t border-b py-4 border-black/10"></div><div class="flex-shrink-0 flex gap-2"><input type="text" id="note-input" placeholder="Add a new note..." class="flex-grow bg-white/50 p-2 rounded-lg border border-black/10"><button id="add-note-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Add Note</button></div><button id="close-notes-btn" class="interactive-3d mt-4 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
     <div id="templates-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl"><h2 class="text-2xl font-bold mb-6 text-center">Habit Templates</h2><div id="templates-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto custom-scrollbar"></div><button id="close-templates-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
     <div id="focus-timer-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-8 w-full max-w-md text-center"><h2 class="text-2xl font-bold mb-2">Focus Mode</h2><p id="focus-habit-name" class="mb-6"></p><input type="hidden" id="focus-habit-id"><div id="focus-timer-display" class="text-6xl font-bold my-8" style="font-variant-numeric: tabular-nums;">00:00</div><div class="flex justify-center gap-4"><button id="focus-start-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-lg">Start</button><button id="focus-pause-btn" class="interactive-3d bg-yellow-500/80 hover:bg-yellow-500 text-white font-bold py-3 px-6 rounded-lg hidden">Pause</button><button id="focus-reset-btn" class="interactive-3d bg-red-500/80 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg">Reset</button></div><button id="close-focus-timer-btn" class="interactive-3d mt-8 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
-    <div id="routines-modal" class="fixed inset-0 modal-backdrop flex-col items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col"><h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Routines</h2><div class="flex-shrink-0 flex gap-2 mb-4"><input type="text" id="new-routine-name" placeholder="New routine name..." class="flex-grow bg-white/50 p-2 rounded-lg border border-black/10"><button id="add-routine-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Add Routine</button></div><div id="routines-list" class="flex-grow space-y-4 overflow-y-auto pr-2 custom-scrollbar"></div><button id="close-routines-btn" class="interactive-3d mt-4 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg flex-shrink-0">Close</button></div></div>
+    <div id="routines-modal" class="fixed inset-0 modal-backdrop flex flex-col items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col"><h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Routines</h2><div class="flex-shrink-0 flex gap-2 mb-4"><input type="text" id="new-routine-name" placeholder="New routine name..." class="flex-grow bg-white/50 p-2 rounded-lg border border-black/10"><button id="add-routine-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Add Routine</button></div><div id="routines-list" class="flex-grow space-y-4 overflow-y-auto pr-2 custom-scrollbar"></div><button id="close-routines-btn" class="interactive-3d mt-4 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg flex-shrink-0">Close</button></div></div>
     <div id="challenges-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col"><h2 class="text-2xl font-bold mb-6 text-center">Challenges</h2><div id="challenges-list" class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar"></div><button id="close-challenges-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
     <div id="store-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col"><h2 class="text-2xl font-bold mb-2 text-center">Rewards Store</h2><p class="text-center mb-4">Your Points: <span id="store-points" class="font-bold">0</span> XP</p><div id="store-items-list" class="flex-grow grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto custom-scrollbar"></div><button id="close-store-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
     <div id="todo-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-lg h-[80vh] flex flex-col"><h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Today's To-Do List</h2><div class="flex-shrink-0 flex gap-2 mb-4"><input type="text" id="new-todo-input" placeholder="Add a new task..." class="flex-grow bg-white/50 p-2 rounded-lg border border-black/10"><button id="add-todo-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Add</button></div><div id="todo-list" class="flex-grow space-y-2 overflow-y-auto pr-2 custom-scrollbar"></div><button id="close-todo-btn" class="interactive-3d mt-4 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg flex-shrink-0">Close</button></div></div>
-
-    <!-- Main App Logic -->
     <script type="module">
-        // --- Firebase Configuration & Initialization ---
-        // Ahem: Is block mein apne Firebase project ki asal (real) configuration daalein.
         const firebaseConfig = {
             apiKey: "AIzaSyCNlPgcBvEgkXlpdgpESR4HpmODjmELTYQ",
             authDomain: "habit-tracker-f6492.firebaseapp.com",
@@ -206,26 +209,16 @@
             messagingSenderId: "383071915072",
             appId: "1:383071915072:web:1d397c7ff97ab847fee3a5"
         };
-
-        // Firebase ko initialize karein
         firebase.initializeApp(firebaseConfig);
-
-        // Firebase services
         const db = firebase.firestore();
         const auth = firebase.auth();
         const GoogleAuthProvider = new firebase.auth.GoogleAuthProvider();
-
-        // Sign-in function
         const signInWithGoogle = () => {
             return auth.signInWithPopup(GoogleAuthProvider);
         };
-
-        // Sign-out function
         const signOutUser = () => {
             return auth.signOut();
         };
-
-        // --- Global State & Config ---
         let allHabits = [];
         let userProfile = {};
         let mainFilter = 'active';
@@ -235,8 +228,11 @@
         let focusTimerInterval = null;
         let focusTimerSecondsLeft = 0;
         let currentUser = null;
-
-        // --- Sound Engine ---
+        const sanitizeHTML = (str) => {
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
+        };
         let sounds;
         function setupSounds() {
             sounds = {
@@ -262,18 +258,15 @@
         document.body.addEventListener('click', async () => {
             if (Tone.context.state !== 'running') {
                 await Tone.start();
-                console.log('Audio context started');
             }
         }, { once: true });
-        
-        // --- UI Elements ---
         const clockEl = document.getElementById('clock');
-        const habitList = document.getElementById('habit-list'), addHabitForm = document.getElementById('add-habit-form'), habitInput = document.getElementById('habit-input'), habitIdInput = document.getElementById('habit-id-input'), addButtons = document.getElementById('add-buttons'), editButtons = document.getElementById('edit-buttons'), cancelEditBtn = document.getElementById('cancel-edit-btn'), loadingState = document.getElementById('loading-state'), habitType = document.getElementById('habit-type'), habitCategory = document.getElementById('habit-category'), habitGoal = document.getElementById('habit-goal'), habitDuration = document.getElementById('habit-duration'), habitRoutine = document.getElementById('habit-routine'), quitHabitCostsEl = document.getElementById('quit-habit-costs'), habitCostInput = document.getElementById('habit-cost'), habitTimeWastedInput = document.getElementById('habit-time-wasted');
-        const confirmModal = document.getElementById('confirm-modal'), modalText = document.getElementById('modal-text'), confirmYesBtn = document.getElementById('confirm-yes'), confirmNoBtn = document.getElementById('confirm-no');
+        const habitList = document.getElementById('habit-list'), addHabitForm = document.getElementById('add-habit-form'), habitInput = document.getElementById('habit-input'), habitIdInput = document.getElementById('habit-id-input'), addButtons = document.getElementById('add-buttons'), editButtons = document.getElementById('edit-buttons'), cancelEditBtn = document.getElementById('cancel-edit-btn'), loadingState = document.getElementById('loading-state'), habitType = document.getElementById('habit-type'), habitCategory = document.getElementById('habit-category'), habitGoal = document.getElementById('habit-goal'), habitDuration = document.getElementById('habit-duration'), habitRoutine = document.getElementById('habit-routine'), quitHabitCostsEl = document.getElementById('quit-habit-costs'), habitCostInput = document.getElementById('habit-cost'), habitTimeWastedInput = document.getElementById('habit-time-wasted'), habitDifficulty = document.getElementById('habit-difficulty');
+        const confirmModal = document.getElementById('confirm-modal'), modalText = document.getElementById('modal-text'), confirmYesBtn = document.getElementById('confirm-yes'), confirmNoBtn = document.getElementById('confirm-no'), confirmButtonsEl = document.getElementById('confirm-buttons');
         const alertModal = document.getElementById('alert-modal'), alertText = document.getElementById('alert-text'), alertOkBtn = document.getElementById('alert-ok');
         const settingsModal = document.getElementById('settings-modal'), settingsBtn = document.getElementById('settings-btn'), closeSettingsBtn = document.getElementById('close-settings-btn'), exportBtn = document.getElementById('export-btn'), importInput = document.getElementById('import-input');
         const achievementsModal = document.getElementById('achievements-modal'), achievementsBtn = document.getElementById('achievements-btn'), closeAchievementsBtn = document.getElementById('close-achievements-btn'), achievementsList = document.getElementById('achievements-list');
-        const reportsModal = document.getElementById('reports-modal'), reportsBtn = document.getElementById('reports-btn'), closeReportsBtn = document.getElementById('close-reports-btn');
+        const reportsModal = document.getElementById('reports-modal'), reportsBtn = document.getElementById('reports-btn'), closeReportsBtn = document.getElementById('close-reports-btn'), analyticsContentEl = document.getElementById('analytics-content');
         const historyModal = document.getElementById('history-modal'), historyBtn = document.getElementById('history-btn'), closeHistoryBtn = document.getElementById('close-history-btn'), historyDatePicker = document.getElementById('history-date-picker'), historySearchBar = document.getElementById('history-search-bar'), historyCompletionFilterBtns = document.getElementById('history-completion-filter-btns'), historyList = document.getElementById('history-list');
         const reminderModal = document.getElementById('reminder-modal'), reminderHabitName = document.getElementById('reminder-habit-name'), reminderHabitId = document.getElementById('reminder-habit-id'), reminderTimeInput = document.getElementById('reminder-time-input'), saveReminderBtn = document.getElementById('save-reminder-btn'), removeReminderBtn = document.getElementById('remove-reminder-btn'), closeReminderBtn = document.getElementById('close-reminder-btn');
         const notesModal = document.getElementById('notes-modal'), notesHabitName = document.getElementById('notes-habit-name'), notesHabitId = document.getElementById('notes-habit-id'), notesList = document.getElementById('notes-list'), noteInput = document.getElementById('note-input'), addNoteBtn = document.getElementById('add-note-btn'), closeNotesBtn = document.getElementById('close-notes-btn');
@@ -288,8 +281,6 @@
         const storeModal = document.getElementById('store-modal'), storeBtn = document.getElementById('store-btn'), closeStoreBtn = document.getElementById('close-store-btn'), storeItemsList = document.getElementById('store-items-list'), storePointsEl = document.getElementById('store-points');
         const todoModal = document.getElementById('todo-modal'), todoBtn = document.getElementById('todo-btn'), closeTodoBtn = document.getElementById('close-todo-btn'), todoListEl = document.getElementById('todo-list'), newTodoInput = document.getElementById('new-todo-input'), addTodoBtn = document.getElementById('add-todo-btn');
         const googleSigninBtn = document.getElementById('google-signin-btn'), userProfileEl = document.getElementById('user-profile'), userAvatarEl = document.getElementById('user-avatar'), userNameEl = document.getElementById('user-name'), signoutBtn = document.getElementById('signout-btn');
-
-        // --- Date & Time Helpers ---
         const getYYYYMMDD = (date) => {
             const d = new Date(date);
             const year = d.getFullYear();
@@ -332,8 +323,6 @@
             }
             return null;
         };
-
-        // --- Data Management (Firebase Firestore) ---
         async function saveData() {
             if (!currentUser) {
                 try {
@@ -352,81 +341,64 @@
                 showAlertModal("Could not save data to the cloud.");
             }
         }
-
         async function loadData() {
             loadingState.style.display = 'block';
             habitList.innerHTML = '';
-            
-            const defaultProfile = { achievements: [], points: 0, level: 1, lastVisitDate: null, routines: [], activeChallenges: [], unlockedRewards: { theme: 'default' }, todos: [] };
+            const defaultProfile = { achievements: [], points: 0, level: 1, lastVisitDate: null, routines: [], activeChallenges: [], unlockedRewards: { theme: 'default' }, todos: [], quitPasses: 2, lastPassReset: getYYYYMMDD(new Date()) };
             const localDataString = localStorage.getItem('glowHabits_local');
             const localData = localDataString ? JSON.parse(localDataString) : null;
-
             if (!currentUser) {
-                // User is logged out, use local data.
                 if (localData) {
                     allHabits = localData.habits || [];
-                    userProfile = { ...defaultProfile, ...localData.profile };
+                    userProfile = { ...defaultProfile, ...(localData.profile || {}) };
                 } else {
                     resetLocalData();
                 }
                 initializeAppUI();
                 return;
             }
-        
-            // User is logged in.
             const userDocRef = db.collection('users').doc(currentUser.uid);
             try {
                 const doc = await userDocRef.get();
-
                 if (doc.exists) {
-                    // User has data in Firestore, use it. This is the primary source.
                     const data = doc.data();
                     allHabits = data.habits || [];
-                    userProfile = { ...defaultProfile, ...data.profile };
-                    // Clear local data as it's now stale.
-                    localStorage.removeItem('glowHabits_local');
+                    userProfile = { ...defaultProfile, ...(data.profile || {}) };
+                    if (localDataString) {
+                        localStorage.removeItem('glowHabits_local');
+                    }
                 } else {
-                    // New user in Firestore. Check if they have local data to migrate.
-                    if (localData && localData.habits.length > 0) {
-                        // Migrate local data to Firestore
+                    if (localData && localData.habits && localData.habits.length > 0) {
                         allHabits = localData.habits || [];
-                        userProfile = { ...defaultProfile, ...localData.profile };
-                        await saveData(); // This will now save to Firestore
-                        showAlertModal("Welcome! Your local data has been synced to your account.");
-                        // Clear local data after successful migration
+                        userProfile = { ...defaultProfile, ...(localData.profile || {}) };
+                        await saveData();
+                        showAlertModal("Welcome! Your previous data has been synced to your new account.");
                         localStorage.removeItem('glowHabits_local');
                     } else {
-                        // Truly new user, no local data.
                         resetLocalData();
-                        await saveData(); // Create initial document in Firestore
+                        await saveData();
                     }
                 }
             } catch (error) {
-                // Failed to connect to Firestore.
                 console.error("Error loading data from Firestore:", error);
-                showAlertModal("Could not connect to the cloud. Using local data for now. Please check your internet connection and Firebase setup.");
-                // IMPORTANT: DO NOT reset data. Fallback to local data if it exists.
+                showAlertModal("Could not connect to the cloud. Using local data for now. Please check your internet connection.");
                 if (localData) {
                     allHabits = localData.habits || [];
-                    userProfile = { ...defaultProfile, ...localData.profile };
+                    userProfile = { ...defaultProfile, ...(localData.profile || {}) };
                 } else {
                     resetLocalData();
                 }
             }
-            
             initializeAppUI();
         }
-
         function resetLocalData() {
             allHabits = [];
-            userProfile = { achievements: [], points: 0, level: 1, lastVisitDate: null, routines: [], activeChallenges: [], unlockedRewards: { theme: 'default' }, todos: [] };
+            userProfile = { achievements: [], points: 0, level: 1, lastVisitDate: null, routines: [], activeChallenges: [], unlockedRewards: { theme: 'default' }, todos: [], quitPasses: 2, lastPassReset: getYYYYMMDD(new Date()) };
         }
-
-        // --- Gamification ---
         const POINTS_CONFIG = { COMPLETE: 10, STREAK_BONUS: 50, ACHIEVEMENT: 100, SLIP: -20, SKIP: -2, TODO: 3 };
+        const DIFFICULTY_MULTIPLIERS = { easy: 0.8, medium: 1.0, hard: 1.5 };
         const getLevelForPoints = (points) => Math.floor(Math.sqrt(Math.max(0, points)) / 10) + 1;
         const getPointsForNextLevel = (level) => Math.pow((level) * 10, 2);
-
         function addPoints(amount, type) {
             const oldLevel = userProfile.level;
             userProfile.points = Math.max(0, userProfile.points + amount);
@@ -440,7 +412,6 @@
             }
             updateGamificationWidget();
         }
-
         function updateGamificationWidget() {
             const nextLevelPoints = getPointsForNextLevel(userProfile.level);
             const currentLevelPoints = getPointsForNextLevel(userProfile.level - 1);
@@ -449,15 +420,13 @@
             const progress = Math.max(0, Math.min(100, (pointsInLevel / pointsForLevel) * 100));
             gamificationWidget.innerHTML = `<div class="text-center"><div class="font-bold">Level ${userProfile.level}</div><div class="text-xs">${userProfile.points.toLocaleString()} XP</div><div class="progress-bar mt-1"><div class="progress-bar-inner" style="width: ${progress}%;"></div></div></div>`;
         }
-
-        // --- Modal Logic ---
         function openModal(modal) { modal.classList.remove('hidden'); }
         function closeModal(modal) { modal.classList.add('hidden'); }
         settingsBtn.addEventListener('click', () => openModal(settingsModal));
         closeSettingsBtn.addEventListener('click', () => closeModal(settingsModal));
-        achievementsBtn.addEventListener('click', () => openModal(achievementsModal));
+        achievementsBtn.addEventListener('click', () => { renderAchievements(); openModal(achievementsModal); });
         closeAchievementsBtn.addEventListener('click', () => closeModal(achievementsModal));
-        reportsBtn.addEventListener('click', () => { openModal(reportsModal); renderReports(); });
+        reportsBtn.addEventListener('click', () => { openModal(reportsModal); renderReports(); renderAnalytics(); });
         closeReportsBtn.addEventListener('click', () => closeModal(reportsModal));
         historyBtn.addEventListener('click', () => { historyDatePicker.value = getYYYYMMDD(new Date()); renderHistoryList(); openModal(historyModal); });
         closeHistoryBtn.addEventListener('click', () => closeModal(historyModal));
@@ -476,12 +445,28 @@
         todoBtn.addEventListener('click', () => { renderTodos(); openModal(todoModal); });
         closeTodoBtn.addEventListener('click', () => closeModal(todoModal));
         let resolveConfirm;
-        function showConfirmModal(text) { return new Promise(resolve => { resolveConfirm = resolve; modalText.textContent = text; openModal(confirmModal); }); }
-        confirmYesBtn.addEventListener('click', () => { closeModal(confirmModal); if (resolveConfirm) resolveConfirm(true); });
-        confirmNoBtn.addEventListener('click', () => { closeModal(confirmModal); if (resolveConfirm) resolveConfirm(false); });
+        function showConfirmModal(text, customButtons = null) { 
+            return new Promise(resolve => { 
+                resolveConfirm = resolve; 
+                modalText.textContent = text;
+                confirmButtonsEl.innerHTML = '';
+                if (customButtons) {
+                    customButtons.forEach(btn => {
+                        const button = document.createElement('button');
+                        button.textContent = btn.text;
+                        button.className = btn.classes;
+                        button.onclick = () => { closeModal(confirmModal); resolve(btn.value); };
+                        confirmButtonsEl.appendChild(button);
+                    });
+                } else {
+                     confirmButtonsEl.innerHTML = `<button id="confirm-yes" class="interactive-3d bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg">Yes</button><button id="confirm-no" class="interactive-3d bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg">Cancel</button>`;
+                     document.getElementById('confirm-yes').onclick = () => { closeModal(confirmModal); resolve(true); };
+                     document.getElementById('confirm-no').onclick = () => { closeModal(confirmModal); resolve(false); };
+                }
+                openModal(confirmModal); 
+            }); 
+        }
         function showAlertModal(text) { alertText.textContent = text; openModal(alertModal); }
-
-        // --- Rendering Logic ---
         function renderFilteredHabits(animatedHabitId = null) {
             const isArchivedView = mainFilter === 'archived';
             const filtered = allHabits.filter(habit => isArchivedView ? habit.isArchived : !habit.isArchived);
@@ -503,7 +488,6 @@
             }
             checkAllAchievements();
         }
-        
         mainFilterBtns.addEventListener('click', (e) => {
             if(e.target.matches('.filter-btn')) {
                 mainFilter = e.target.dataset.filter;
@@ -512,7 +496,6 @@
                 renderFilteredHabits();
             }
         });
-
         function renderHabit(habit) {
             const goal = habit.habitGoal || 'build';
             const { streak, longestStreak, moneySaved, timeSaved } = calculateStreaks(habit);
@@ -520,7 +503,6 @@
             const isCompletedThisPeriod = !!(habit.completions || {})[periodId];
             const isSkippedThisPeriod = !!(habit.skips || {})[periodId];
             const item = document.createElement('div');
-            
             let statusClass = '';
             if (goal === 'build') {
                 if (isCompletedThisPeriod) {
@@ -530,37 +512,20 @@
                 } else {
                     statusClass = 'build uncompleted';
                 }
-            } else { // quit
+            } else {
                 statusClass = `quit ${isCompletedThisPeriod ? 'slipped' : 'on-streak'}`;
             }
             item.className = `habit-item flex items-center p-3 rounded-xl ${statusClass}`;
-            
             let actionButtons;
-            const commonButtons = `
-                <button class="notes-btn p-2 rounded-full bg-black/5 hover:bg-black/10" title="Notes">📝</button>
-                <button class="reminder-btn p-2 rounded-full bg-black/5 hover:bg-black/10" title="Set Reminder">⏰</button>
-                <button class="edit-btn p-2 rounded-full bg-black/5 hover:bg-black/10" title="Edit habit">✏️</button>
-            `;
+            const commonButtons = `<button class="notes-btn p-2 rounded-full bg-black/5 hover:bg-black/10" title="Notes">📝</button><button class="reminder-btn p-2 rounded-full bg-black/5 hover:bg-black/10" title="Set Reminder">⏰</button><button class="edit-btn p-2 rounded-full bg-black/5 hover:bg-black/10" title="Edit habit">✏️</button>`;
             const focusButton = habit.duration > 0 ? `<button class="focus-btn p-2 rounded-full bg-black/5 hover:bg-black/10" title="Focus Timer">⏱️</button>` : '';
-
             if (habit.isArchived) {
-                actionButtons = `
-                    <button class="unarchive-btn p-2 rounded-full bg-black/5 hover:bg-green-200" title="Unarchive habit">↩️</button>
-                    <button class="delete-btn p-2 rounded-full bg-black/5 hover:bg-red-200" title="Delete permanently">🗑️</button>
-                `;
+                actionButtons = `<button class="unarchive-btn p-2 rounded-full bg-black/5 hover:bg-green-200" title="Unarchive habit">↩️</button><button class="delete-btn p-2 rounded-full bg-black/5 hover:bg-red-200" title="Delete permanently">🗑️</button>`;
             } else if (goal === 'build') {
-                actionButtons = commonButtons + focusButton + `
-                    <button class="skip-btn p-2 rounded-full bg-black/5 hover:bg-black/10" title="Skip Today">⏭️</button>
-                    <button class="complete-btn p-3 rounded-full ${isCompletedThisPeriod || isSkippedThisPeriod ? 'bg-gray-200 cursor-not-allowed' : 'bg-green-200 hover:bg-green-300'}" title="${isCompletedThisPeriod ? 'Completed!' : 'Mark as done'}">${isCompletedThisPeriod ? '✅' : '✔️'}</button>
-                    <button class="archive-btn p-2 rounded-full bg-black/5 hover:bg-gray-300" title="Archive habit">📦</button>
-                `;
-            } else { // quit
-                actionButtons = commonButtons + `
-                    <button class="complete-btn p-3 rounded-full ${isCompletedThisPeriod ? 'bg-red-300 cursor-not-allowed' : 'bg-blue-200 hover:bg-blue-300'}" title="${isCompletedThisPeriod ? 'Slipped today' : 'I slipped up'}">😥</button>
-                    <button class="archive-btn p-2 rounded-full bg-black/5 hover:bg-gray-300" title="Archive habit">📦</button>
-                `;
+                actionButtons = commonButtons + focusButton + `<button class="skip-btn p-2 rounded-full bg-black/5 hover:bg-black/10" title="Skip Today">⏭️</button><button class="complete-btn p-3 rounded-full ${isCompletedThisPeriod || isSkippedThisPeriod ? 'bg-gray-200 cursor-not-allowed' : 'bg-green-200 hover:bg-green-300'}" title="${isCompletedThisPeriod ? 'Completed!' : 'Mark as done'}">${isCompletedThisPeriod ? '✅' : '✔️'}</button><button class="archive-btn p-2 rounded-full bg-black/5 hover:bg-gray-300" title="Archive habit">📦</button>`;
+            } else {
+                actionButtons = commonButtons + `<button class="complete-btn p-3 rounded-full ${isCompletedThisPeriod ? 'bg-red-300 cursor-not-allowed' : 'bg-blue-200 hover:bg-blue-300'}" title="${isCompletedThisPeriod ? 'Slipped today' : 'I slipped up'}">😥</button><button class="archive-btn p-2 rounded-full bg-black/5 hover:bg-gray-300" title="Archive habit">📦</button>`;
             }
-
             const streakText = goal === 'build' ? `Streak: <span class="font-bold">${streak}</span> &nbsp;•&nbsp; Longest: <span class="font-bold">${longestStreak}</span>` : `Streak: <span class="font-bold">${streak}</span> days &nbsp;•&nbsp; Longest: <span class="font-bold">${longestStreak}</span> days`;
             const routine = userProfile.routines.find(r => r.id === habit.routineId);
             const routineText = routine ? `<p class="text-xs text-purple-600 font-semibold mt-1">Routine: ${routine.name}</p>` : '';
@@ -570,18 +535,13 @@
                 const timeStr = timeSaved > 0 ? `⏳ ${Math.floor(timeSaved/60)}h ${timeSaved%60}m saved` : '';
                 savingsText = `<p class="text-xs text-blue-800 font-semibold mt-1">${moneyStr}${moneyStr && timeStr ? ' • ' : ''}${timeStr}</p>`;
             }
-
-            item.innerHTML = `
-                <button class="pin-btn p-2" title="Pin habit">${habit.isPinned ? '📌' : '📍'}</button>
-                <div class="flex-grow mx-2">
-                    <p class="font-semibold text-lg">${habit.name}</p>
-                    <p class="text-sm">${streakText}</p>
-                    ${routineText}
-                    ${savingsText}
-                </div>
-                <div class="flex items-center gap-1 md:gap-2">${actionButtons}</div>
-            `;
-            
+            let completionTimeText = '';
+            if (isCompletedThisPeriod && habit.completions[periodId].completedAt) {
+                const completionDate = new Date(habit.completions[periodId].completedAt);
+                const formattedTime = completionDate.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+                completionTimeText = `<p class="text-xs text-green-800 font-semibold mt-1">Completed at: ${formattedTime}</p>`;
+            }
+            item.innerHTML = `<button class="pin-btn p-2" title="Pin habit">${habit.isPinned ? '📌' : '📍'}</button><div class="flex-grow mx-2"><p class="font-semibold text-lg">${habit.name}</p><p class="text-sm">${streakText}</p>${completionTimeText}${routineText}${savingsText}</div><div class="flex items-center gap-1 md:gap-2">${actionButtons}</div>`;
             item.querySelector('.pin-btn')?.addEventListener('click', () => togglePin(habit.id));
             item.querySelector('.edit-btn')?.addEventListener('click', () => startEdit(habit));
             item.querySelector('.delete-btn')?.addEventListener('click', () => deleteHabit(habit.id, habit.name));
@@ -591,14 +551,11 @@
             item.querySelector('.notes-btn')?.addEventListener('click', () => openNotesModal(habit));
             item.querySelector('.focus-btn')?.addEventListener('click', () => openFocusTimer(habit));
             item.querySelector('.skip-btn')?.addEventListener('click', () => skipHabit(habit.id, habit.name));
-
             if (!isCompletedThisPeriod && !isSkippedThisPeriod && !habit.isArchived) {
                 item.querySelector('.complete-btn').addEventListener('click', () => completeHabit(habit.id));
             }
             return item;
         }
-        
-        // --- CRUD & Feature Logic ---
         habitGoal.addEventListener('change', () => {
             if (habitGoal.value === 'quit') {
                 quitHabitCostsEl.classList.remove('hidden');
@@ -606,24 +563,22 @@
                 quitHabitCostsEl.classList.add('hidden');
             }
         });
-
         addHabitForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const habitName = habitInput.value.trim();
             const habitId = habitIdInput.value;
             if (!habitName) return;
-
             const data = { 
-                name: habitName, 
+                name: sanitizeHTML(habitName),
                 type: habitType.value, 
                 category: habitCategory.value, 
                 habitGoal: habitGoal.value,
+                difficulty: habitDifficulty.value || 'medium',
                 duration: parseInt(habitDuration.value, 10) || 0,
                 routineId: habitRoutine.value || null,
                 costPerSlip: habitGoal.value === 'quit' ? parseFloat(habitCostInput.value) || 0 : 0,
                 timeWastedPerSlip: habitGoal.value === 'quit' ? parseInt(habitTimeWastedInput.value) || 0 : 0,
             };
-
             if (habitId) {
                 const habitIndex = allHabits.findIndex(h => h.id === habitId);
                 if(habitIndex > -1) allHabits[habitIndex] = { ...allHabits[habitIndex], ...data };
@@ -641,12 +596,13 @@
             renderFilteredHabits();
             resetForm();
         });
-
         function startEdit(habit) {
-            habitInput.value = habit.name; habitIdInput.value = habit.id;
+            habitInput.value = habit.name;
+            habitIdInput.value = habit.id;
             habitType.value = habit.type || 'daily'; 
             habitCategory.value = habit.category || 'General';
             habitGoal.value = habit.habitGoal || 'build';
+            habitDifficulty.value = habit.difficulty || 'medium';
             habitDuration.value = habit.duration || '';
             habitRoutine.value = habit.routineId || '';
             if (habit.habitGoal === 'quit') {
@@ -659,55 +615,46 @@
             addButtons.classList.add('hidden'); editButtons.classList.remove('hidden');
             habitInput.focus();
         }
-
         function resetForm() {
             addHabitForm.reset(); habitIdInput.value = '';
             quitHabitCostsEl.classList.add('hidden');
             addButtons.classList.remove('hidden'); editButtons.classList.add('hidden');
         }
         cancelEditBtn.addEventListener('click', resetForm);
-
-        function completeHabit(id, fromTimer = false) {
+        async function completeHabit(id, fromTimer = false) {
             const habitIndex = allHabits.findIndex(h => h.id === id);
             if (habitIndex > -1) {
                 const habit = allHabits[habitIndex];
                 const goal = habit.habitGoal || 'build';
                 const periodId = getCurrentPeriodId(habit.type || 'daily');
                 if (!habit.completions) habit.completions = {};
-                
                 if (habit.completions[periodId] || (habit.skips || {})[periodId]) {
                     if (fromTimer) showAlertModal(`"${habit.name}" was already marked for this period.`);
                     return;
                 }
-
                 habit.completions[periodId] = { date: getYYYYMMDD(new Date()), completedAt: new Date().toISOString() };
-                
                 if (goal === 'build') {
-                    addPoints(POINTS_CONFIG.COMPLETE, 'complete');
+                    const multiplier = DIFFICULTY_MULTIPLIERS[habit.difficulty || 'medium'];
+                    addPoints(POINTS_CONFIG.COMPLETE * multiplier, 'complete');
                     playSound('complete');
-                } else { // quit
-                    addPoints(POINTS_CONFIG.SLIP, 'slip');
-                    playSound('slip');
-                    showAlertModal(`It's okay to slip. Your streak for "${habit.name}" has been reset.`);
+                } else {
+                    await handleQuitSlip(habit);
                 }
-                
-                saveData();
+                await saveData();
                 renderFilteredHabits(id);
+                handleHabitStacking(habit.id);
             }
         }
-
         function calculateStreaks(habit) {
             const type = habit.type || 'daily';
             const goal = habit.habitGoal || 'build';
             const completions = habit.completions || {};
             const skips = habit.skips || {};
             const nowId = getCurrentPeriodId(type);
-
             if (goal === 'build') {
                 let currentStreak = 0;
                 let longestStreak = 0;
                 let tempStreak = 0;
-                
                 const allPeriodIds = [...new Set([...Object.keys(completions), ...Object.keys(skips)])].sort();
                 if (allPeriodIds.length > 0) {
                     tempStreak = completions[allPeriodIds[0]] ? 1 : 0;
@@ -722,37 +669,31 @@
                         if (tempStreak > longestStreak) longestStreak = tempStreak;
                     }
                 }
-
                 let lastPeriodId = nowId;
-                if (completions[lastPeriodId] || skips[lastPeriodId]) {
-                    if (completions[lastPeriodId]) currentStreak = 1;
-                    while (true) {
-                        const prevPeriodId = getPreviousPeriodId(lastPeriodId, type);
-                        if (!prevPeriodId) break;
-                        
-                        if (completions[prevPeriodId] || skips[prevPeriodId]) {
-                            if(completions[prevPeriodId]) currentStreak++;
-                            lastPeriodId = prevPeriodId;
-                        } else {
-                            break;
-                        }
+                while(true) {
+                    if (completions[lastPeriodId]) {
+                        currentStreak++;
+                    } else if (!skips[lastPeriodId]) {
+                        if (lastPeriodId !== nowId) currentStreak = 0;
+                        break;
+                    }
+                    const prevPeriodId = getPreviousPeriodId(lastPeriodId, type);
+                    if (!prevPeriodId) break; 
+                    lastPeriodId = prevPeriodId;
+                }
+                if(!completions[nowId]) {
+                    const yesterdayId = getPreviousPeriodId(nowId, type);
+                    if (yesterdayId && !completions[yesterdayId] && !skips[yesterdayId]) {
+                        currentStreak = 0;
                     }
                 }
-                
-                const prevNowId = getPreviousPeriodId(nowId, type);
-                if (!completions[nowId] && !completions[prevNowId] && !skips[nowId] && !skips[prevNowId]) {
-                    currentStreak = 0;
-                }
-
                 return { streak: currentStreak, longestStreak, moneySaved: 0, timeSaved: 0 };
-
-            } else { // quit
+            } else {
                 const sortedSlips = Object.values(completions).map(c => c.date).sort();
                 const today = new Date();
                 let currentStreak = 0;
                 let longestStreak = 0;
                 let streakStartDate = new Date(habit.createdAt);
-                
                 let lastDate = streakStartDate;
                 sortedSlips.forEach(slipDateStr => {
                     const slipDate = new Date(slipDateStr + 'T00:00:00');
@@ -760,21 +701,16 @@
                     if (diff > longestStreak) longestStreak = diff;
                     lastDate = slipDate;
                 });
-
                 const finalLeg = Math.round((today - lastDate) / (1000 * 60 * 60 * 24));
                 if (finalLeg > longestStreak) longestStreak = finalLeg;
-                
                 currentStreak = finalLeg;
                 if(completions[nowId]) currentStreak = 0;
-                
                 const totalDaysSaved = Math.round((today - streakStartDate) / (1000 * 60 * 60 * 24)) - sortedSlips.length;
                 const moneySaved = totalDaysSaved * (habit.costPerSlip || 0);
                 const timeSaved = totalDaysSaved * (habit.timeWastedPerSlip || 0);
-
                 return { streak: currentStreak, longestStreak, moneySaved, timeSaved };
             }
         }
-        
         function togglePin(id) { 
             const i = allHabits.findIndex(h=>h.id===id); 
             if(i>-1){ allHabits[i].isPinned = !allHabits[i].isPinned; saveData(); renderFilteredHabits(); }
@@ -796,8 +732,6 @@
                 renderFilteredHabits(); 
             }
         };
-
-        // --- Achievements ---
         const achievementDefs = {
             'FIRST_HABIT': { title: "Habit Pioneer", desc: "Create your first habit.", icon: "🚀" },
             'FIRST_COMPLETION': { title: "First Step", desc: "Complete a habit for the first time.", icon: "✅" },
@@ -817,16 +751,14 @@
             'TIMER_MASTER': { title: "Focus Master", desc: "Use the focus timer to complete a habit.", icon: "⏳" },
         };
         function checkAllAchievements() {
-            const unlocked = userProfile.achievements || [];
             if (!userProfile.achievements) userProfile.achievements = [];
+            const unlocked = userProfile.achievements;
             let newAchievements = [];
-            const check = (key, condition) => { if (condition && !unlocked.includes(key)) newAchievements.push(key); };
-            
+            const check = (key, condition) => { if (condition && !unlocked.includes(key) && !newAchievements.includes(key)) newAchievements.push(key); };
             const activeHabits = allHabits.filter(h => !h.isArchived);
             const buildHabits = activeHabits.filter(h => (h.habitGoal || 'build') === 'build');
             const quitHabits = activeHabits.filter(h => h.habitGoal === 'quit');
             const totalCompletions = buildHabits.reduce((sum, h) => sum + Object.keys(h.completions || {}).length, 0);
-            
             check('FIRST_HABIT', activeHabits.length >= 1);
             check('FIRST_COMPLETION', totalCompletions >= 1);
             check('FIVE_HABITS', activeHabits.length >= 5);
@@ -838,17 +770,14 @@
             check('CHALLENGE_ACCEPTED', userProfile.activeChallenges && userProfile.activeChallenges.length > 0);
             check('SHOPAHOLIC', userProfile.unlockedRewards && Object.keys(userProfile.unlockedRewards).length > 1);
             check('TIMER_MASTER', userProfile.usedTimer);
-
-            const allCategories = ['General', 'Health', 'Work', 'Learning', 'Personal'];
+            const allCategories = ['General', 'Health', 'Work', 'Learning', 'Personal', 'Finance', 'Creative'];
             const userCategories = new Set(activeHabits.map(h => h.category || 'General'));
             check('CATEGORY_MASTER', allCategories.every(c => userCategories.has(c)));
-
             const dailyBuildHabits = buildHabits.filter(h => (h.type || 'daily') === 'daily');
             if (dailyBuildHabits.length > 0) {
                 const today = getCurrentPeriodId('daily');
                 check('COMPLETE_ALL_DAILY', dailyBuildHabits.every(h => (h.completions || {})[today]));
             }
-            
             activeHabits.forEach(h => { 
                 const { longestStreak } = calculateStreaks(h); 
                 if ((h.habitGoal || 'build') === 'build') {
@@ -857,13 +786,12 @@
                     check('STREAK_30', longestStreak >= 30);
                 }
             });
-            
             if (newAchievements.length > 0) { 
                 userProfile.achievements.push(...newAchievements);
                 addPoints(newAchievements.length * POINTS_CONFIG.ACHIEVEMENT, 'achievement');
                 playSound('achieve');
                 saveData(); 
-                renderAchievements(newlyUnlocked); 
+                renderAchievements(newAchievements); 
                 newAchievements.forEach(key => showAlertModal(`Achievement Unlocked: ${achievementDefs[key].title}!`));
             }
         }
@@ -872,15 +800,13 @@
             achievementsList.innerHTML = Object.entries(achievementDefs).map(([key, value]) => { 
                 const isUnlocked = unlocked.includes(key);
                 const isNew = newlyUnlocked.includes(key);
-                return `<div class="p-4 rounded-lg text-center transition-all ${isUnlocked ? 'bg-yellow-400/20 border border-yellow-500' : 'bg-gray-200/50'} ${isNew ? 'unlocked-animation' : ''}" id="ach-${key}"><div class="text-4xl mb-2">${value.icon}</div><h4 class="font-bold">${value.title}</h4><p class="text-xs">${value.desc}</p></div>`; }).join(''); 
+                return `<div class="p-4 rounded-lg text-center transition-all ${isUnlocked ? 'achievement-unlocked' : 'bg-gray-200/50'} ${isNew ? 'unlocked-animation' : ''}" id="ach-${key}"><div class="text-4xl mb-2">${value.icon}</div><h4 class="font-bold">${value.title}</h4><p class="text-xs">${value.desc}</p></div>`; }).join(''); 
         }
-
-        // --- Reports, History, Notes, Templates ---
         function renderReports() {
-            const categories = ['General', 'Health', 'Work', 'Learning', 'Personal'];
+            const categories = ['General', 'Health', 'Work', 'Learning', 'Personal', 'Finance', 'Creative'];
             const categoryData = categories.map(cat => allHabits.filter(h => h.category === cat && (h.habitGoal || 'build') === 'build').reduce((sum, h) => sum + Object.keys(h.completions).length, 0));
             if(categoryChart) categoryChart.destroy();
-            categoryChart = new Chart(document.getElementById('category-chart'), { type: 'doughnut', data: { labels: categories, datasets: [{ label: 'Completions', data: categoryData, backgroundColor: ['#ff8c00', '#ff007f', '#0af29a', '#00c4ff', '#a855f7'] }] }, options: { responsive: true, maintainAspectRatio: true } });
+            categoryChart = new Chart(document.getElementById('category-chart'), { type: 'doughnut', data: { labels: categories, datasets: [{ label: 'Completions', data: categoryData, backgroundColor: ['#ff8c00', '#ff007f', '#0af29a', '#00c4ff', '#a855f7', '#facc15', '#6b7280'] }] }, options: { responsive: true, maintainAspectRatio: true } });
             const last7Days = Array(7).fill(0).map((_, i) => { const d = new Date(); d.setDate(d.getDate() - i); return getYYYYMMDD(d); }).reverse();
             const activityData = last7Days.map(day => allHabits.reduce((sum, h) => sum + ((h.completions || {})[day] ? 1 : 0), 0));
             if(activityChart) activityChart.destroy();
@@ -890,6 +816,7 @@
             const selectedDateStr = historyDatePicker.value;
             if (!selectedDateStr) return;
             const parts = selectedDateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+            if (!parts) return;
             const selectedDate = new Date(parts[1], parts[2] - 1, parts[3]);
             const searchTerm = historySearchBar.value.toLowerCase();
             const relevantHabits = allHabits.filter(habit => {
@@ -904,22 +831,19 @@
                 const periodIdForSelectedDate = getPeriodId(habit.type || 'daily', selectedDate);
                 const isCompleted = !!(habit.completions || {})[periodIdForSelectedDate];
                 const isSkipped = !!(habit.skips || {})[periodIdForSelectedDate];
-                
                 if (historyCompletionFilter === 'completed' && !isCompleted) return;
                 if (historyCompletionFilter === 'incomplete' && (isCompleted || isSkipped)) return;
                 if (historyCompletionFilter === 'skipped' && !isSkipped) return;
-
                 const item = document.createElement('div');
                 const goal = habit.habitGoal || 'build';
                 let statusSymbol = '❌';
                 let bgColor = 'bg-red-100/50';
-
                 if (goal === 'build') { 
                     if(isCompleted) { statusSymbol = '✅'; bgColor = 'bg-green-100/50'; }
                     else if (isSkipped) { statusSymbol = '⏭️'; bgColor = 'bg-yellow-100/50'; }
                     else { statusSymbol = '❌'; bgColor = 'bg-red-100/50'; }
                 }
-                else { // quit
+                else {
                     if(isCompleted) { statusSymbol = '😥'; bgColor = 'bg-red-100/50'; }
                     else { statusSymbol = '👍'; bgColor = 'bg-green-100/50'; }
                 }
@@ -950,10 +874,7 @@
             const habit = allHabits.find(h => h.id === id);
             if (!habit || !habit.notes) { notesList.innerHTML = ''; return; }
             notesList.innerHTML = habit.notes.sort((a,b) => b.timestamp - a.timestamp).map(note => 
-                `<div class="bg-white/50 p-2 rounded-lg text-sm">
-                    <p>${note.text}</p>
-                    <p class="text-xs text-gray-500 text-right">${new Date(note.timestamp).toLocaleString()}</p>
-                </div>`
+                `<div class="bg-white/50 p-2 rounded-lg text-sm"><p>${sanitizeHTML(note.text)}</p><p class="text-xs text-gray-500 text-right">${new Date(note.timestamp).toLocaleString()}</p></div>`
             ).join('');
         }
         addNoteBtn.addEventListener('click', () => {
@@ -963,10 +884,11 @@
             const habitIndex = allHabits.findIndex(h => h.id === id);
             if (habitIndex > -1) {
                 if (!allHabits[habitIndex].notes) allHabits[habitIndex].notes = [];
-                allHabits[habitIndex].notes.push({ text: text, timestamp: Date.now() });
+                allHabits[habitIndex].notes.push({ text: sanitizeHTML(text), timestamp: Date.now() });
                 saveData();
                 renderNotes(id);
                 noteInput.value = '';
+                checkAllAchievements();
             }
         });
         const habitTemplates = [
@@ -977,6 +899,12 @@
             { name: "No junk food", type: "daily", category: "Health", habitGoal: "quit" },
             { name: "Review weekly goals", type: "weekly", category: "Work", habitGoal: "build" },
             { name: "No social media after 10 PM", type: "daily", category: "Personal", habitGoal: "quit" },
+            { name: "Save [amount]", type: "daily", category: "Finance", habitGoal: "build" },
+            { name: "Practice a skill for 20 mins", type: "daily", category: "Learning", habitGoal: "build", duration: 20 },
+            { name: "Clean/Tidy up for 15 mins", type: "daily", category: "Personal", habitGoal: "build", duration: 15 },
+            { name: "Learn a new word", type: "daily", category: "Learning", habitGoal: "build" },
+            { name: "No unnecessary spending", type: "daily", category: "Finance", habitGoal: "quit" },
+            { name: "Sketch or draw something", type: "daily", category: "Creative", habitGoal: "build" },
         ];
         function renderTemplates() {
             templatesList.innerHTML = habitTemplates.map(template => `
@@ -1004,8 +932,6 @@
                 }
             }
         });
-
-        // --- Quotes, Clock, Reminders ---
         const motivationalQuotes = [ "The secret of getting ahead is getting started.", "Believe you can and you're halfway there.", "It does not matter how slowly you go as long as you do not stop.", "The only way to do great work is to love what you do.", "Success is not final, failure is not fatal: it is the courage to continue that counts." ];
         function setMotivationalQuote() {
             const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
@@ -1043,8 +969,6 @@
             closeModal(reminderModal);
             showAlertModal("Reminder removed.");
         });
-
-        // --- Focus Timer Functions ---
         function openFocusTimer(habit) {
             focusHabitId.value = habit.id;
             focusHabitName.textContent = habit.name;
@@ -1090,19 +1014,15 @@
             const habit = allHabits.find(h => h.id === focusHabitId.value);
             if (habit) resetFocusTimer(habit.duration * 60);
         });
-
-        // --- Skip Function ---
         async function skipHabit(id, name) {
             const i = allHabits.findIndex(h => h.id === id);
             if (i === -1) return;
-
             const habit = allHabits[i];
             const periodId = getCurrentPeriodId(habit.type);
             if ((habit.completions || {})[periodId] || (habit.skips || {})[periodId]) {
                 showAlertModal(`"${name}" has already been marked for this period.`);
                 return;
             }
-
             if (await showConfirmModal(`Skip "${name}" for today? This will not break your streak but may cost a small amount of XP.`)) {
                 if (!habit.skips) habit.skips = {};
                 habit.skips[periodId] = { date: getYYYYMMDD(new Date()) };
@@ -1110,62 +1030,54 @@
                 saveData();
                 renderFilteredHabits();
                 showAlertModal(`"${name}" skipped for this period.`);
+                checkAllAchievements();
             }
         }
-
-        // --- Auto-Skip Function ---
         function autoSkipMissedHabits() {
             const todayStr = getYYYYMMDD(new Date());
             const lastVisitDate = userProfile.lastVisitDate;
-
             if (lastVisitDate && lastVisitDate !== todayStr) {
                 let skippedCount = 0;
-                const yesterdayStr = getPreviousPeriodId(todayStr, 'daily');
-
-                allHabits.forEach(habit => {
-                    if (!habit.isArchived && habit.habitGoal === 'build' && habit.type === 'daily') {
-                        const wasCompletedYesterday = (habit.completions || {})[yesterdayStr];
-                        const wasSkippedYesterday = (habit.skips || {})[yesterdayStr];
-
-                        if (!wasCompletedYesterday && !wasSkippedYesterday) {
-                            if (!habit.skips) habit.skips = {};
-                            habit.skips[yesterdayStr] = { date: yesterdayStr, auto: true };
-                            skippedCount++;
+                let currentDate = new Date(lastVisitDate);
+                let endDate = new Date(todayStr);
+                while(currentDate < endDate) {
+                    const checkDateStr = getYYYYMMDD(currentDate);
+                     allHabits.forEach(habit => {
+                        if (!habit.isArchived && habit.habitGoal === 'build') {
+                            const periodIdForCheckDate = getPeriodId(habit.type, currentDate);
+                            if (new Date(checkDateStr) < new Date(todayStr)) {
+                                const wasCompleted = (habit.completions || {})[periodIdForCheckDate];
+                                const wasSkipped = (habit.skips || {})[periodIdForCheckDate];
+                                 if (!wasCompleted && !wasSkipped) {
+                                    if (!habit.skips) habit.skips = {};
+                                    habit.skips[periodIdForCheckDate] = { date: checkDateStr, auto: true };
+                                    skippedCount++;
+                                }
+                            }
                         }
-                    }
-                });
-
+                    });
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
                 if (skippedCount > 0) {
                     setTimeout(() => {
-                        showAlertModal(`${skippedCount} habit(s) from yesterday were automatically skipped to preserve your streaks.`);
+                        showAlertModal(`${skippedCount} habit instances from previous days were automatically skipped to preserve your streaks.`);
                     }, 500);
                 }
             }
             userProfile.lastVisitDate = todayStr;
         }
-        
-        // --- Routines Functions ---
         function renderRoutines() {
             routinesList.innerHTML = '';
-            if (userProfile.routines.length === 0) {
+            if (!userProfile.routines || userProfile.routines.length === 0) {
                 routinesList.innerHTML = '<p class="text-center text-gray-500">No routines created yet. Add one above!</p>';
+                updateRoutineDropdown();
+                return;
             }
             userProfile.routines.forEach(routine => {
                 const routineHabits = allHabits.filter(h => h.routineId === routine.id && !h.isArchived);
                 const routineEl = document.createElement('div');
                 routineEl.className = 'p-4 rounded-lg bg-white/30';
-                routineEl.innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-xl font-bold">${routine.name}</h3>
-                        <div>
-                            <button data-routine-id="${routine.id}" class="complete-routine-btn bg-green-500 text-white font-bold py-1 px-3 rounded-lg text-sm">Complete All</button>
-                            <button data-routine-id="${routine.id}" class="delete-routine-btn text-red-500 font-bold py-1 px-3 text-sm">Delete</button>
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        ${routineHabits.length > 0 ? routineHabits.map(h => `<p class="text-sm pl-2 border-l-2 border-purple-400">${h.name}</p>`).join('') : '<p class="text-sm text-gray-500">No habits in this routine.</p>'}
-                    </div>
-                `;
+                routineEl.innerHTML = `<div class="flex justify-between items-center mb-2"><h3 class="text-xl font-bold">${sanitizeHTML(routine.name)}</h3><div><button data-routine-id="${routine.id}" class="complete-routine-btn bg-green-500 text-white font-bold py-1 px-3 rounded-lg text-sm">Complete All</button><button data-routine-id="${routine.id}" class="delete-routine-btn text-red-500 font-bold py-1 px-3 text-sm">Delete</button></div></div><div class="space-y-2">${routineHabits.length > 0 ? routineHabits.map(h => `<p class="text-sm pl-2 border-l-2 border-purple-400">${h.name}</p>`).join('') : '<p class="text-sm text-gray-500">No habits in this routine.</p>'}</div>`;
                 routinesList.appendChild(routineEl);
             });
             updateRoutineDropdown();
@@ -1173,13 +1085,16 @@
         addRoutineBtn.addEventListener('click', () => {
             const name = newRoutineNameInput.value.trim();
             if (!name) return;
-            userProfile.routines.push({ id: `routine_${Date.now()}`, name });
+            if (!userProfile.routines) userProfile.routines = [];
+            userProfile.routines.push({ id: `routine_${Date.now()}`, name: sanitizeHTML(name) });
             newRoutineNameInput.value = '';
             saveData();
             renderRoutines();
+            checkAllAchievements();
         });
         routinesList.addEventListener('click', async e => {
             const routineId = e.target.dataset.routineId;
+            if (!routineId) return;
             if (e.target.matches('.complete-routine-btn')) {
                 const habitsToComplete = allHabits.filter(h => h.routineId === routineId && !h.isArchived);
                 habitsToComplete.forEach(h => completeHabit(h.id));
@@ -1197,33 +1112,28 @@
             }
         });
         function updateRoutineDropdown() {
+            const currentVal = habitRoutine.value;
             habitRoutine.innerHTML = '<option value="">No Routine</option>';
+            if (!userProfile.routines) return;
             userProfile.routines.forEach(r => {
                 const option = document.createElement('option');
                 option.value = r.id;
                 option.textContent = r.name;
                 habitRoutine.appendChild(option);
             });
+            habitRoutine.value = currentVal;
         }
-        
-        // --- Challenges Functions ---
         const challenges = [
             { id: 'c1', title: '7-Day Fitness Starter', desc: 'A simple one-week challenge to get you moving.', habits: [{ name: 'Walk for 20 minutes', type: 'daily', category: 'Health' }, { name: 'Drink 8 glasses of water', type: 'daily', category: 'Health' }, { name: '5 minutes of stretching', type: 'daily', category: 'Health', duration: 5 }] },
-            { id: 'c2', title: 'Mindful Morning', desc: 'Start your day with focus and calm for 5 days.', habits: [{ name: 'Meditate for 5 minutes', type: 'daily', category: 'Personal', duration: 5 }, { name: 'No phone for first 30 mins', type: 'daily', category: 'Personal' }, { name: 'Write one thing you are grateful for', type: 'daily', category: 'Personal' }] }
+            { id: 'c2', title: 'Mindful Morning', desc: 'Start your day with focus and calm for 5 days.', habits: [{ name: 'Meditate for 5 minutes', type: 'daily', category: 'Personal', duration: 5 }, { name: 'No phone for first 30 mins', type: 'daily', category: 'Personal' }, { name: 'Write one thing you are grateful for', type: 'daily', category: 'Personal' }] },
+            { id: 'c3', title: 'Digital Detox Week', desc: 'Reduce screen time and reconnect with the real world for 7 days.', habits: [{ name: 'No social media for 1 hour after waking up', type: 'daily', category: 'Personal' }, { name: 'Read a physical book for 15 minutes', type: 'daily', category: 'Learning', duration: 15 }, { name: 'Screen-free meal times', type: 'daily', category: 'Health' }] },
+            { id: 'c4', title: '5-Day Creative Kickstart', desc: 'Spark your creativity with a small daily creative task.', habits: [{ name: 'Sketch or doodle for 10 minutes', type: 'daily', category: 'Creative', duration: 10 }, { name: 'Write a 100-word story', type: 'daily', category: 'Creative' }, { name: 'Listen to a new music genre', type: 'daily', category: 'Creative' }] }
         ];
         function renderChallenges() {
+            if (!userProfile.activeChallenges) userProfile.activeChallenges = [];
             challengesList.innerHTML = challenges.map(c => {
                 const isJoined = userProfile.activeChallenges.includes(c.id);
-                return `
-                <div class="p-6 rounded-lg bg-white/30 flex flex-col">
-                    <h3 class="text-xl font-bold mb-2">${c.title}</h3>
-                    <p class="text-sm mb-4 flex-grow">${c.desc}</p>
-                    <ul class="list-disc list-inside mb-4 text-sm">
-                        ${c.habits.map(h => `<li>${h.name}</li>`).join('')}
-                    </ul>
-                    <button data-challenge-id="${c.id}" class="join-challenge-btn mt-auto w-full font-bold py-2 px-4 rounded-lg ${isJoined ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 text-white'}">${isJoined ? 'Joined' : 'Join Challenge'}</button>
-                </div>
-            `}).join('');
+                return `<div class="p-6 rounded-lg bg-white/30 flex flex-col"><h3 class="text-xl font-bold mb-2">${c.title}</h3><p class="text-sm mb-4 flex-grow">${c.desc}</p><ul class="list-disc list-inside mb-4 text-sm">${c.habits.map(h => `<li>${h.name}</li>`).join('')}</ul><button data-challenge-id="${c.id}" class="join-challenge-btn mt-auto w-full font-bold py-2 px-4 rounded-lg ${isJoined ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 text-white'}">${isJoined ? 'Joined' : 'Join Challenge'}</button></div>`}).join('');
         }
         challengesList.addEventListener('click', async e => {
             if (e.target.matches('.join-challenge-btn') && !e.target.classList.contains('cursor-not-allowed')) {
@@ -1237,16 +1147,16 @@
                             habitGoal: 'build', ...h
                         });
                     });
+                    if (!userProfile.activeChallenges) userProfile.activeChallenges = [];
                     userProfile.activeChallenges.push(challengeId);
                     saveData();
                     renderChallenges();
                     renderFilteredHabits();
                     showAlertModal('Challenge joined! Your new habits are on the main screen.');
+                    checkAllAchievements();
                 }
             }
         });
-        
-        // --- Store Functions ---
         const storeItems = [
             { id: 'theme-ocean', name: 'Ocean Blue Theme', type: 'theme', cost: 250, value: 'ocean-blue', desc: 'A calming blue and green gradient.' },
             { id: 'theme-sunset', name: 'Sunset Orange Theme', type: 'theme', cost: 250, value: 'sunset-orange', desc: 'A warm and energetic orange theme.' },
@@ -1254,6 +1164,7 @@
             { id: 'theme-midnight', name: 'Midnight Purple Theme', type: 'theme', cost: 500, value: 'midnight-purple', desc: 'A cool and dark theme for night owls.' },
         ];
         function renderStore() {
+            if (!userProfile.unlockedRewards) userProfile.unlockedRewards = { theme: 'default' };
             storePointsEl.textContent = userProfile.points.toLocaleString();
             storeItemsList.innerHTML = storeItems.map(item => {
                 const isUnlocked = userProfile.unlockedRewards[item.id];
@@ -1264,14 +1175,7 @@
                 } else {
                     buttonHtml = `<button data-item-id="${item.id}" class="buy-item-btn w-full font-bold py-2 px-4 rounded-lg ${userProfile.points < item.cost ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-500 text-white'}">Buy (${item.cost} XP)</button>`;
                 }
-                return `
-                <div class="p-4 rounded-lg bg-white/30 flex flex-col text-center">
-                    <div class="text-3xl mb-2">${item.type === 'theme' ? '🎨' : '🎵'}</div>
-                    <h4 class="font-bold flex-grow">${item.name}</h4>
-                    <p class="text-xs text-gray-600 mb-4">${item.desc}</p>
-                    ${buttonHtml}
-                </div>
-                `;
+                return `<div class="p-4 rounded-lg bg-white/30 flex flex-col text-center"><div class="text-3xl mb-2">${item.type === 'theme' ? '🎨' : '🎵'}</div><h4 class="font-bold flex-grow">${item.name}</h4><p class="text-xs text-gray-600 mb-4">${item.desc}</p>${buttonHtml}</div>`;
             }).join('');
         }
         storeItemsList.addEventListener('click', async e => {
@@ -1279,7 +1183,6 @@
             if (!itemId) return;
             const item = storeItems.find(i => i.id === itemId);
             if (!item) return;
-
             if (e.target.matches('.buy-item-btn') && !e.target.classList.contains('cursor-not-allowed')) {
                 if (userProfile.points >= item.cost) {
                     if (await showConfirmModal(`Buy "${item.name}" for ${item.cost} XP?`)) {
@@ -1289,6 +1192,7 @@
                         saveData();
                         renderStore();
                         updateGamificationWidget();
+                        checkAllAchievements();
                     }
                 }
             } else if (e.target.matches('.apply-item-btn') && !e.target.classList.contains('cursor-not-allowed')) {
@@ -1303,9 +1207,8 @@
             saveData();
             renderStore();
         }
-
-        // --- To-Do List Functions ---
         function renderTodos() {
+            if (!userProfile.todos) userProfile.todos = [];
             const today = getYYYYMMDD(new Date());
             const todaysTodos = userProfile.todos.filter(todo => todo.date === today);
             todoListEl.innerHTML = '';
@@ -1316,20 +1219,17 @@
             todaysTodos.forEach(todo => {
                 const todoEl = document.createElement('div');
                 todoEl.className = 'flex items-center p-2 rounded-lg bg-white/50';
-                todoEl.innerHTML = `
-                    <input type="checkbox" data-todo-id="${todo.id}" class="todo-checkbox h-5 w-5 rounded-md border-gray-300 text-purple-600 focus:ring-purple-500" ${todo.isDone ? 'checked' : ''}>
-                    <span class="ml-3 flex-grow ${todo.isDone ? 'line-through text-gray-500' : ''}">${todo.text}</span>
-                    <button data-todo-id="${todo.id}" class="delete-todo-btn text-red-500 hover:text-red-700 font-bold">✕</button>
-                `;
+                todoEl.innerHTML = `<input type="checkbox" data-todo-id="${todo.id}" class="todo-checkbox h-5 w-5 rounded-md border-gray-300 text-purple-600 focus:ring-purple-500" ${todo.isDone ? 'checked' : ''}><span class="ml-3 flex-grow ${todo.isDone ? 'line-through text-gray-500' : ''}">${sanitizeHTML(todo.text)}</span><button data-todo-id="${todo.id}" class="delete-todo-btn text-red-500 hover:text-red-700 font-bold">✕</button>`;
                 todoListEl.appendChild(todoEl);
             });
         }
         addTodoBtn.addEventListener('click', () => {
             const text = newTodoInput.value.trim();
             if (!text) return;
+            if (!userProfile.todos) userProfile.todos = [];
             userProfile.todos.push({
                 id: `todo_${Date.now()}`,
-                text: text,
+                text: sanitizeHTML(text),
                 isDone: false,
                 date: getYYYYMMDD(new Date())
             });
@@ -1340,10 +1240,8 @@
         todoListEl.addEventListener('click', e => {
             const todoId = e.target.dataset.todoId;
             if (!todoId) return;
-
             const todoIndex = userProfile.todos.findIndex(t => t.id === todoId);
             if (todoIndex === -1) return;
-
             if (e.target.matches('.todo-checkbox')) {
                 const isDone = e.target.checked;
                 if (isDone && !userProfile.todos[todoIndex].isDone) {
@@ -1353,30 +1251,23 @@
                 }
                 userProfile.todos[todoIndex].isDone = isDone;
             }
-
             if (e.target.matches('.delete-todo-btn')) {
                 userProfile.todos.splice(todoIndex, 1);
             }
-            
             saveData();
             renderTodos();
         });
-
-        // --- Authentication Functions ---
         googleSigninBtn.addEventListener('click', () => {
             signInWithGoogle().catch(error => {
                 console.error("Google Sign-In Error:", error);
                 showAlertModal(`Error: ${error.message}`);
             });
         });
-
         signoutBtn.addEventListener('click', () => {
             signOutUser();
         });
-
         auth.onAuthStateChanged(async user => {
             if (user) {
-                // User is signed in
                 currentUser = user;
                 googleSigninBtn.classList.add('hidden');
                 userProfileEl.classList.remove('hidden');
@@ -1385,19 +1276,56 @@
                 userAvatarEl.src = user.photoURL;
                 await loadData();
             } else {
-                // User is signed out
                 currentUser = null;
                 googleSigninBtn.classList.remove('hidden');
                 userProfileEl.classList.add('hidden');
                 userProfileEl.classList.remove('flex');
-                await loadData(); // Load local data
+                await loadData();
             }
         });
-
-
-        // --- Initialization ---
+        async function handleQuitSlip(habit) {
+            playSound('slip');
+            if (userProfile.quitPasses > 0) {
+                 const usePass = await showConfirmModal(`You slipped on "${habit.name}". Use one of your ${userProfile.quitPasses} passes to avoid penalty?`);
+                 if (usePass) {
+                    userProfile.quitPasses--;
+                    showAlertModal(`Pass used. You have ${userProfile.quitPasses} remaining.`);
+                    return;
+                 }
+            }
+            const multiplier = DIFFICULTY_MULTIPLIERS[habit.difficulty || 'medium'];
+            addPoints(POINTS_CONFIG.SLIP * multiplier, 'slip');
+            showAlertModal(`You slipped on "${habit.name}". Don't worry, just get back on track!`);
+        }
+        function handleHabitStacking(completedHabitId) {
+            const habit = allHabits.find(h => h.id === completedHabitId);
+            if (!habit || !habit.routineId) return;
+            const routineHabits = allHabits.filter(h => h.routineId === habit.routineId && !h.isArchived);
+            const completedIndex = routineHabits.findIndex(h => h.id === completedHabitId);
+            if (completedIndex > -1 && completedIndex < routineHabits.length - 1) {
+                const nextHabit = routineHabits[completedIndex + 1];
+                const periodId = getCurrentPeriodId(nextHabit.type);
+                if (!(nextHabit.completions || {})[periodId] && !(nextHabit.skips || {})[periodId]) {
+                    setTimeout(() => {
+                        showAlertModal(`Great job! Next in your routine: "${nextHabit.name}"`);
+                    }, 1000);
+                }
+            }
+        }
+        function renderAnalytics() {
+            const buildHabits = allHabits.filter(h => !h.isArchived && (h.habitGoal || 'build') === 'build');
+            if (buildHabits.length === 0) {
+                analyticsContentEl.innerHTML = `<div class="text-gray-500"><svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg><p class="mt-2 text-sm font-semibold">Not enough data for analysis yet.</p><p class="text-xs">Start completing some habits to see your patterns here!</p></div>`;
+                return;
+            }
+            const totalCompletions = buildHabits.reduce((sum, h) => sum + Object.keys(h.completions || {}).length, 0);
+            const totalSkips = buildHabits.reduce((sum, h) => sum + Object.keys(h.skips || {}).length, 0);
+            const successRate = totalCompletions + totalSkips > 0 ? (totalCompletions / (totalCompletions + totalSkips) * 100).toFixed(1) : 0;
+            analyticsContentEl.innerHTML = `<div class="text-center"><p>You have a <strong class="text-2xl text-green-700">${successRate}%</strong> success rate.</p><p class="text-xs">(Calculated from completions vs. skips)</p><p class="mt-4 text-sm">Keep up the great work and build those streaks!</p></div>`;
+        }
         function initializeAppUI() {
             try {
+                if (!userProfile.unlockedRewards) userProfile.unlockedRewards = { theme: 'default' };
                 applyTheme(userProfile.unlockedRewards.theme || 'default');
                 autoSkipMissedHabits(); 
                 saveData(); 
@@ -1411,7 +1339,6 @@
                 setMotivationalQuote();
                 setInterval(updateClock, 60000);
                 loadingState.style.display = 'none';
-
                 notificationStatusEl.textContent = Notification.permission;
                 if (Notification.permission === 'default') {
                     requestNotifyBtn.classList.remove('hidden');
@@ -1422,11 +1349,7 @@
                 showAlertModal("A critical error occurred while starting the app. Please refresh.");
             }
         }
-        
-        // --- Global Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Event listeners for modals and other static elements are set up here
-            // to ensure they are only attached once.
             exportBtn.addEventListener('click', () => {
                 try {
                     const dataStr = JSON.stringify({ habits: allHabits, profile: userProfile }, null, 2);
@@ -1471,7 +1394,6 @@
                 importInput.value = '';
             });
         });
-        
     </script>
 </body>
 </html>
