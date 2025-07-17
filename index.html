@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     
-    <!-- Firebase Libraries (Inko pehle load karna zaroori hai) -->
+    <!-- Firebase Libraries -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -195,10 +195,35 @@
     <div id="todo-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-lg h-[80vh] flex flex-col"><h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Today's To-Do List</h2><div class="flex-shrink-0 flex gap-2 mb-4"><input type="text" id="new-todo-input" placeholder="Add a new task..." class="flex-grow bg-white/50 p-2 rounded-lg border border-black/10"><button id="add-todo-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Add</button></div><div id="todo-list" class="flex-grow space-y-2 overflow-y-auto pr-2 custom-scrollbar"></div><button id="close-todo-btn" class="interactive-3d mt-4 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg flex-shrink-0">Close</button></div></div>
 
     <!-- Main App Logic -->
-    <script type="module" src="./firebase.js"></script>
     <script type="module">
-        // Firebase services ko firebase.js se import karein
-        import { db, auth, signInWithGoogle, signOutUser } from './firebase.js';
+        // --- Firebase Configuration & Initialization ---
+        // Ahem: Is block mein apne Firebase project ki asal (real) configuration daalein.
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNlPgcBvEgkXlpdgpESR4HpmODjmELTYQ",
+            authDomain: "habit-tracker-f6492.firebaseapp.com",
+            projectId: "habit-tracker-f6492",
+            storageBucket: "habit-tracker-f6492.firebasestorage.app",
+            messagingSenderId: "383071915072",
+            appId: "1:383071915072:web:1d397c7ff97ab847fee3a5"
+        };
+
+        // Firebase ko initialize karein
+        firebase.initializeApp(firebaseConfig);
+
+        // Firebase services
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const GoogleAuthProvider = new firebase.auth.GoogleAuthProvider();
+
+        // Sign-in function
+        const signInWithGoogle = () => {
+            return auth.signInWithPopup(GoogleAuthProvider);
+        };
+
+        // Sign-out function
+        const signOutUser = () => {
+            return auth.signOut();
+        };
 
         // --- Global State & Config ---
         let allHabits = [];
