@@ -185,7 +185,7 @@
     <div id="achievements-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl"><h2 class="text-2xl font-bold mb-6 text-center">Achievements</h2><div id="achievements-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[60vh] overflow-y-auto custom-scrollbar"></div><button id="close-achievements-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
     <div id="reports-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-8 w-full max-w-4xl"><h2 class="text-2xl font-bold mb-6 text-center">Your Progress Reports</h2><div class="grid md:grid-cols-2 gap-8"><div class="text-center"> <h3 class="font-semibold mb-2">Completions by Category</h3><canvas id="category-chart"></canvas></div><div class="text-center"><h3 class="font-semibold mb-2">Recent Activity</h3><canvas id="activity-chart"></canvas></div></div><button id="close-reports-btn" class="interactive-3d mt-8 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
     <div id="history-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col"><h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Habit History</h2><div class="flex-shrink-0 flex flex-wrap gap-3 items-center mb-4 p-2 border-b border-black/10"><input type="date" id="history-date-picker" class="interactive-3d bg-white/50 placeholder-gray-500 border-2 border-transparent focus:border-pink-400/50 focus:ring-0 rounded-xl px-4 py-2 text-sm outline-none"><input type="search" id="history-search-bar" placeholder="Search habits..." class="interactive-3d flex-grow bg-white/50 placeholder-gray-500 border-2 border-transparent focus:border-pink-400/50 focus:ring-0 rounded-xl px-4 py-2 text-sm outline-none"><div id="history-completion-filter-btns" class="bg-black/5 p-1 rounded-full flex items-center"><button data-filter="all" class="filter-btn active font-semibold text-sm px-3 py-1 rounded-full transition-all">All</button><button data-filter="incomplete" class="filter-btn font-semibold text-sm px-3 py-1 rounded-full transition-all">Incomplete</button><button data-filter="completed" class="filter-btn font-semibold text-sm px-3 py-1 rounded-full transition-all">Completed</button><button data-filter="skipped" class="filter-btn font-semibold text-sm px-3 py-1 rounded-full transition-all">Skipped</button></div></div><div id="history-list" class="flex-grow space-y-3 overflow-y-auto pr-2 custom-scrollbar"></div><button id="close-history-btn" class="interactive-3d mt-4 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg flex-shrink-0">Close</button></div></div>
-    <div id="reminder-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-6 w-full max-w-sm text-center"><h2 class="text-xl font-bold mb-2">Set Reminder</h2><p id="reminder-habit-name" class="mb-4"></p><input type="hidden" id="reminder-habit-id"><div class="flex flex-col gap-4"><input type="datetime-local" id="reminder-time-input" class="w-full bg-white/50 p-2 rounded-lg border border-black/10" title="Set a specific date and time for a single notification."><button id="save-reminder-btn" class="interactive-3d bg-orange-500/80 hover:bg-orange-500 text-white font-bold py-2 px-4 rounded-lg mt-2">Save Reminder</button><button id="remove-reminder-btn" class="interactive-3d bg-red-500/80 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg">Remove Reminder</button><button id="close-reminder-btn" class="interactive-3d bg-gray-500/80 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg">Cancel</button></div></div></div>
+    <div id="reminder-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-6 w-full max-w-sm text-center"><h2 class="text-xl font-bold mb-2">Set Reminder</h2><p id="reminder-habit-name" class="mb-4"></p><input type="hidden" id="reminder-habit-id"><div class="flex flex-col gap-4"><input type="datetime-local" id="reminder-time-input" class="w-full bg-white/50 p-2 rounded-lg border border-black/10" title="Set a specific date and time for a single notification."><button id="save-reminder-btn" class="interactive-3d bg-orange-500/80 hover:bg-orange-500 text-white font-bold py-2 px-4 rounded-lg mt-2">Save Reminder</button><button id="remove-reminder-btn" class="interactive-3d bg-red-500/80 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg">Remove Reminder</button><button id="close-reminder-btn" class="interactive-3d bg-gray-500/80 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Cancel</button></div></div></div>
     <div id="notes-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-6 w-full max-w-lg h-[70vh] flex flex-col"><h2 class="text-2xl font-bold mb-2 text-center">Notes for <span id="notes-habit-name"></span></h2><input type="hidden" id="notes-habit-id"><div id="notes-list" class="flex-grow space-y-2 overflow-y-auto pr-2 custom-scrollbar mb-4 border-t border-b py-4 border-black/10"></div><div class="flex-shrink-0 flex gap-2"><input type="text" id="note-input" placeholder="Add a new note..." class="flex-grow bg-white/50 p-2 rounded-lg border border-black/10"><button id="add-note-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Add Note</button></div><button id="close-notes-btn" class="interactive-3d mt-4 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
     <div id="templates-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl"><h2 class="text-2xl font-bold mb-6 text-center">Habit Templates</h2><div id="templates-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto custom-scrollbar"></div><button id="close-templates-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
     <div id="focus-timer-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-8 w-full max-w-md text-center"><h2 class="text-2xl font-bold mb-2">Focus Mode</h2><p id="focus-habit-name" class="mb-6"></p><input type="hidden" id="focus-habit-id"><div id="focus-timer-display" class="text-6xl font-bold my-8" style="font-variant-numeric: tabular-nums;">00:00</div><div class="flex justify-center gap-4"><button id="focus-start-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-lg">Start</button><button id="focus-pause-btn" class="interactive-3d bg-yellow-500/80 hover:bg-yellow-500 text-white font-bold py-3 px-6 rounded-lg hidden">Pause</button><button id="focus-reset-btn" class="interactive-3d bg-red-500/80 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg">Reset</button></div><button id="close-focus-timer-btn" class="interactive-3d mt-8 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
@@ -336,7 +336,6 @@
         // --- Data Management (Firebase Firestore) ---
         async function saveData() {
             if (!currentUser) {
-                // For logged-out users, save to localStorage
                 try {
                     localStorage.setItem('glowHabits_local', JSON.stringify({ habits: allHabits, profile: userProfile }));
                 } catch (e) { console.error("Error saving local data:", e); }
@@ -359,14 +358,14 @@
             habitList.innerHTML = '';
             
             const defaultProfile = { achievements: [], points: 0, level: 1, lastVisitDate: null, routines: [], activeChallenges: [], unlockedRewards: { theme: 'default' }, todos: [] };
+            const localDataString = localStorage.getItem('glowHabits_local');
+            const localData = localDataString ? JSON.parse(localDataString) : null;
 
             if (!currentUser) {
-                // For logged-out users, load from localStorage
-                const localData = localStorage.getItem('glowHabits_local');
+                // User is logged out, use local data.
                 if (localData) {
-                    const data = JSON.parse(localData);
-                    allHabits = data.habits || [];
-                    userProfile = { ...defaultProfile, ...data.profile }; // Merge with default
+                    allHabits = localData.habits || [];
+                    userProfile = { ...defaultProfile, ...localData.profile };
                 } else {
                     resetLocalData();
                 }
@@ -374,23 +373,47 @@
                 return;
             }
         
+            // User is logged in.
             const userDocRef = db.collection('users').doc(currentUser.uid);
             try {
                 const doc = await userDocRef.get();
+
                 if (doc.exists) {
+                    // User has data in Firestore, use it. This is the primary source.
                     const data = doc.data();
                     allHabits = data.habits || [];
-                    userProfile = { ...defaultProfile, ...data.profile }; // Merge with default
+                    userProfile = { ...defaultProfile, ...data.profile };
+                    // Clear local data as it's now stale.
+                    localStorage.removeItem('glowHabits_local');
                 } else {
-                    // New user in Firestore
-                    resetLocalData();
-                    await saveData(); // Create initial document in Firestore
+                    // New user in Firestore. Check if they have local data to migrate.
+                    if (localData && localData.habits.length > 0) {
+                        // Migrate local data to Firestore
+                        allHabits = localData.habits || [];
+                        userProfile = { ...defaultProfile, ...localData.profile };
+                        await saveData(); // This will now save to Firestore
+                        showAlertModal("Welcome! Your local data has been synced to your account.");
+                        // Clear local data after successful migration
+                        localStorage.removeItem('glowHabits_local');
+                    } else {
+                        // Truly new user, no local data.
+                        resetLocalData();
+                        await saveData(); // Create initial document in Firestore
+                    }
                 }
             } catch (error) {
+                // Failed to connect to Firestore.
                 console.error("Error loading data from Firestore:", error);
-                showAlertModal("Could not load your cloud data. Using local backup.");
-                resetLocalData();
+                showAlertModal("Could not connect to the cloud. Using local data for now. Please check your internet connection and Firebase setup.");
+                // IMPORTANT: DO NOT reset data. Fallback to local data if it exists.
+                if (localData) {
+                    allHabits = localData.habits || [];
+                    userProfile = { ...defaultProfile, ...localData.profile };
+                } else {
+                    resetLocalData();
+                }
             }
+            
             initializeAppUI();
         }
 
