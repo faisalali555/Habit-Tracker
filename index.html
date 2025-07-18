@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     
-    <!-- FIREBASE SDK UPGRADED TO v11+ (MODULAR) -->
+    <!-- FIREBASE SDK v11+ (MODULAR) -->
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -119,7 +119,7 @@
     </style>
 </head>
 <body data-theme="default">
-    <!-- HTML Structure remains the same as user provided -->
+    <!-- HTML Structure remains the same -->
     <div class="w-full h-screen flex flex-col p-2">
         <div class="flex-shrink-0 flex justify-between items-center mb-2 gap-4">
             <div class="flex items-center gap-2 md:gap-3">
@@ -235,8 +235,6 @@
     <div id="todo-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-lg h-[80vh] flex flex-col"><h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Today's To-Do List</h2><div class="flex-shrink-0 flex gap-2 mb-4"><input type="text" id="new-todo-input" placeholder="Add a new task..." class="flex-grow bg-white/50 p-2 rounded-lg border border-black/10"><button id="add-todo-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Add</button></div><div id="todo-list" class="flex-grow space-y-2 overflow-y-auto pr-2 custom-scrollbar"></div><button id="close-todo-btn" class="interactive-3d mt-4 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg flex-shrink-0">Close</button></div></div>
     
     <script type="module">
-        // This script runs after the Firebase SDK is loaded and initialized.
-        
         // --- Global Variables ---
         let allHabits = [];
         let userProfile = {};
@@ -249,10 +247,10 @@
         let currentUser = null;
         let sounds;
 
-        // --- DOM Element Grabbing (same as before) ---
+        // --- DOM Element Grabbing ---
         const clockEl = document.getElementById('clock');
         const habitList = document.getElementById('habit-list'), addHabitForm = document.getElementById('add-habit-form'), habitInput = document.getElementById('habit-input'), habitIdInput = document.getElementById('habit-id-input'), addButtons = document.getElementById('add-buttons'), editButtons = document.getElementById('edit-buttons'), cancelEditBtn = document.getElementById('cancel-edit-btn'), loadingState = document.getElementById('loading-state'), habitType = document.getElementById('habit-type'), habitCategory = document.getElementById('habit-category'), habitGoal = document.getElementById('habit-goal'), habitDuration = document.getElementById('habit-duration'), habitRoutine = document.getElementById('habit-routine'), quitHabitCostsEl = document.getElementById('quit-habit-costs'), habitCostInput = document.getElementById('habit-cost'), habitTimeWastedInput = document.getElementById('habit-time-wasted'), habitDifficulty = document.getElementById('habit-difficulty');
-        const confirmModal = document.getElementById('confirm-modal'), modalText = document.getElementById('modal-text'), confirmYesBtn = document.getElementById('confirm-yes'), confirmNoBtn = document.getElementById('confirm-no'), confirmButtonsEl = document.getElementById('confirm-buttons');
+        const confirmModal = document.getElementById('confirm-modal'), modalText = document.getElementById('modal-text'), confirmButtonsEl = document.getElementById('confirm-buttons');
         const alertModal = document.getElementById('alert-modal'), alertText = document.getElementById('alert-text'), alertOkBtn = document.getElementById('alert-ok');
         const settingsModal = document.getElementById('settings-modal'), settingsBtn = document.getElementById('settings-btn'), closeSettingsBtn = document.getElementById('close-settings-btn'), exportBtn = document.getElementById('export-btn'), importInput = document.getElementById('import-input');
         const achievementsModal = document.getElementById('achievements-modal'), achievementsBtn = document.getElementById('achievements-btn'), closeAchievementsBtn = document.getElementById('close-achievements-btn'), achievementsList = document.getElementById('achievements-list');
@@ -272,13 +270,22 @@
         const todoModal = document.getElementById('todo-modal'), todoBtn = document.getElementById('todo-btn'), closeTodoBtn = document.getElementById('close-todo-btn'), todoListEl = document.getElementById('todo-list'), newTodoInput = document.getElementById('new-todo-input'), addTodoBtn = document.getElementById('add-todo-btn');
         const googleSigninBtn = document.getElementById('google-signin-btn'), userProfileEl = document.getElementById('user-profile'), userAvatarEl = document.getElementById('user-avatar'), userNameEl = document.getElementById('user-name'), signoutBtn = document.getElementById('signout-btn');
 
-        // --- Utility Functions (mostly unchanged) ---
+        // --- Utility Functions ---
         const sanitizeHTML = (str) => {
             const temp = document.createElement('div');
             temp.textContent = str;
             return temp.innerHTML;
         };
-        const getYYYYMMDD = (date) => new Date(date).toISOString().split('T')[0];
+        
+        // **FIXED**: This function is now timezone-safe and correctly formats the date.
+        const getYYYYMMDD = (date) => {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
         const getWeekId = (date) => {
             const d = new Date(date.valueOf());
             d.setHours(0, 0, 0, 0);
@@ -327,6 +334,7 @@
         function playSound(type) {
              if (!sounds) return;
              try {
+                 if (Tone.context.state !== 'running') { Tone.start(); }
                  if (type === 'complete') sounds.complete.triggerAttackRelease("C5", "8n");
                  if (type === 'slip') sounds.slip.triggerAttackRelease("C3", "4n");
                  if (type === 'achieve') sounds.achieve.triggerAttackRelease(["C4", "E4", "G4"], "8n");
@@ -335,15 +343,9 @@
                  if (type === 'buy') sounds.buy.triggerAttackRelease("A5", "16n");
              } catch (e) { console.error("Sound error:", e); }
         }
-        document.body.addEventListener('click', async () => {
-             if (Tone.context.state !== 'running') {
-                 await Tone.start();
-             }
-        }, { once: true });
         
-        // --- Data Handling (REWRITTEN & FIXED) ---
+        // --- Data Handling ---
         async function saveData() {
-            // If not logged in, save to local storage
             if (!currentUser) {
                 try {
                     localStorage.setItem('glowHabits_local', JSON.stringify({ habits: allHabits, profile: userProfile }));
@@ -353,7 +355,6 @@
                 }
                 return;
             }
-            // If logged in, save to Firestore
             try {
                 const userDocRef = window.doc(window.db, 'users', currentUser.uid);
                 await window.setDoc(userDocRef, {
@@ -372,12 +373,10 @@
             
             const defaultProfile = { achievements: [], points: 0, level: 1, lastVisitDate: null, routines: [], activeChallenges: [], unlockedRewards: { theme: 'default' }, todos: [], quitPasses: 2, lastPassReset: getYYYYMMDD(new Date()) };
             
-            // Try to get local data first, as it might need merging
             const localDataString = localStorage.getItem('glowHabits_local');
             const localData = localDataString ? JSON.parse(localDataString) : null;
 
             if (!currentUser) {
-                // Case 1: User is NOT logged in. Use local data only.
                 if (localData) {
                     allHabits = localData.habits || [];
                     userProfile = { ...defaultProfile, ...(localData.profile || {}) };
@@ -388,19 +387,15 @@
                 return;
             }
 
-            // Case 2: User IS logged in. Handle cloud data and potential merging.
             const userDocRef = window.doc(window.db, 'users', currentUser.uid);
             try {
                 const docSnap = await window.getDoc(userDocRef);
                 
                 if (docSnap.exists()) {
-                    // Subcase 2a: Cloud document exists.
                     const cloudData = docSnap.data();
                     const cloudHabits = cloudData.habits || [];
                     userProfile = { ...defaultProfile, ...(cloudData.profile || {}) };
 
-                    // *** MERGE LOGIC ***
-                    // Check if local data also exists and needs merging.
                     if (localData && localData.habits && localData.habits.length > 0) {
                         const localHabits = localData.habits;
                         const cloudHabitIds = new Set(cloudHabits.map(h => h.id));
@@ -408,35 +403,32 @@
 
                         if (habitsToMerge.length > 0) {
                             allHabits = [...cloudHabits, ...habitsToMerge];
-                            showAlertModal("Aap ki local habits aap ke cloud account mein merge kar di gayi hein.");
+                            showAlertModal("Your local habits have been merged into your cloud account.");
                         } else {
                             allHabits = cloudHabits;
                         }
                         
-                        await saveData(); // Save the potentially merged data back to the cloud
-                        localStorage.removeItem('glowHabits_local'); // Clean up local data after successful merge
+                        await saveData(); 
+                        localStorage.removeItem('glowHabits_local');
                     } else {
-                        // No local data to merge, just use cloud data.
                         allHabits = cloudHabits;
                     }
                 } else {
-                    // Subcase 2b: New cloud user. Check if they have local data to upload.
                     if (localData && localData.habits && localData.habits.length > 0) {
                         allHabits = localData.habits || [];
                         userProfile = { ...defaultProfile, ...(localData.profile || {}) };
-                        await saveData(); // This creates the new document in Firestore
-                        showAlertModal("Khush Amdeed! Aap ki local habits aap ke naye account mein save ho gayi hein.");
+                        await saveData(); 
+                        showAlertModal("Welcome! Your local habits have been saved to your new account.");
                         localStorage.removeItem('glowHabits_local');
                     } else {
-                        // No cloud data and no local data, so start fresh.
                         resetAppData();
-                        await saveData(); // Create an empty document for the new user
+                        await saveData(); 
                     }
                 }
             } catch (error) {
                 console.error("Error loading data from Firestore:", error);
-                showAlertModal("Cloud se connect nahi ho saka. Offline mode istemal kiya ja raha hai.");
-                // Fallback to local data if cloud fails
+                // This error is now less likely to show incorrectly.
+                showAlertModal("Could not connect to the cloud. Using offline mode for now.");
                 if (localData) {
                     allHabits = localData.habits || [];
                     userProfile = { ...defaultProfile, ...(localData.profile || {}) };
@@ -453,7 +445,7 @@
             userProfile = { achievements: [], points: 0, level: 1, lastVisitDate: null, routines: [], activeChallenges: [], unlockedRewards: { theme: 'default' }, todos: [], quitPasses: 2, lastPassReset: getYYYYMMDD(new Date()) };
         }
 
-        // --- Auth Handling (REWRITTEN for modular SDK) ---
+        // --- Auth Handling ---
         const signInWithGoogle = () => {
             const provider = new window.GoogleAuthProvider();
             return window.signInWithPopup(window.auth, provider);
@@ -463,30 +455,10 @@
             return window.signOut(window.auth);
         };
 
-        window.onAuthStateChanged(window.auth, async (user) => {
-            if (user) {
-                // User is signed in
-                currentUser = user;
-                googleSigninBtn.classList.add('hidden');
-                userProfileEl.classList.remove('hidden');
-                userProfileEl.classList.add('flex');
-                userNameEl.textContent = user.displayName;
-                userAvatarEl.src = user.photoURL;
-                await loadData(); // Load data after user is confirmed
-            } else {
-                // User is signed out
-                currentUser = null;
-                googleSigninBtn.classList.remove('hidden');
-                userProfileEl.classList.add('hidden');
-                userProfileEl.classList.remove('flex');
-                await loadData(); // Load local data
-            }
-        });
-
         googleSigninBtn.addEventListener('click', () => {
             signInWithGoogle().catch(error => {
                 console.error("Google Sign-In Error:", error);
-                showAlertModal(`Error: ${error.message}`);
+                showAlertModal(`Sign-in error: ${error.message}`);
             });
         });
 
@@ -494,7 +466,27 @@
             signOutUser();
         });
 
-        // --- The rest of your application logic (unchanged unless necessary) ---
+        // --- Core App Initialization ---
+        function initializeApp() {
+            window.onAuthStateChanged(window.auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    googleSigninBtn.classList.add('hidden');
+                    userProfileEl.classList.remove('hidden');
+                    userProfileEl.classList.add('flex');
+                    userNameEl.textContent = user.displayName;
+                    userAvatarEl.src = user.photoURL;
+                } else {
+                    currentUser = null;
+                    googleSigninBtn.classList.remove('hidden');
+                    userProfileEl.classList.add('hidden');
+                    userProfileEl.classList.remove('flex');
+                }
+                await loadData();
+            });
+        }
+
+        // --- The rest of your application logic ---
         const POINTS_CONFIG = { COMPLETE: 10, STREAK_BONUS: 50, ACHIEVEMENT: 100, SLIP: -20, SKIP: -2, TODO: 3 };
         const DIFFICULTY_MULTIPLIERS = { easy: 0.8, medium: 1.0, hard: 1.5 };
         const getLevelForPoints = (points) => Math.floor(Math.sqrt(Math.max(0, points)) / 10) + 1;
@@ -544,10 +536,9 @@
         closeStoreBtn.addEventListener('click', () => closeModal(storeModal));
         todoBtn.addEventListener('click', () => { renderTodos(); openModal(todoModal); });
         closeTodoBtn.addEventListener('click', () => closeModal(todoModal));
-        let resolveConfirm;
+        
         function showConfirmModal(text, customButtons = null) { 
             return new Promise(resolve => { 
-                resolveConfirm = resolve; 
                 modalText.textContent = text;
                 confirmButtonsEl.innerHTML = '';
                 if (customButtons) {
@@ -756,21 +747,32 @@
                 let longestStreak = 0;
                 let tempStreak = 0;
                 const allPeriodIds = [...new Set([...Object.keys(completions), ...Object.keys(skips)])].sort();
+                
                 if (allPeriodIds.length > 0) {
-                    tempStreak = completions[allPeriodIds[0]] ? 1 : 0;
-                    longestStreak = tempStreak;
-                    for (let i = 1; i < allPeriodIds.length; i++) {
-                        const expectedPrev = getPreviousPeriodId(allPeriodIds[i], type);
-                        if (allPeriodIds[i-1] === expectedPrev) {
-                            if (completions[allPeriodIds[i]]) tempStreak++;
-                        } else {
-                            tempStreak = completions[allPeriodIds[i]] ? 1 : 0;
+                    for (let i = 0; i < allPeriodIds.length; i++) {
+                        const currentPeriod = allPeriodIds[i];
+                        const prevPeriod = i > 0 ? allPeriodIds[i-1] : null;
+                        const expectedPrev = getPreviousPeriodId(currentPeriod, type);
+
+                        if (completions[currentPeriod]) {
+                            if (prevPeriod && (prevPeriod === expectedPrev)) {
+                                tempStreak++;
+                            } else {
+                                tempStreak = 1;
+                            }
+                        } else if (skips[currentPeriod]) {
+                            if (!prevPeriod || (prevPeriod !== expectedPrev)) {
+                                tempStreak = 0;
+                            }
                         }
-                        if (tempStreak > longestStreak) longestStreak = tempStreak;
+                        if (tempStreak > longestStreak) {
+                            longestStreak = tempStreak;
+                        }
                     }
                 }
+
                 let pId = nowId;
-                if (!completions[pId]) {
+                if (!completions[pId] && !skips[pId]) {
                     pId = getPreviousPeriodId(pId, type);
                 }
                 while (pId && (completions[pId] || skips[pId])) {
@@ -1416,6 +1418,8 @@
             }
         }
         document.addEventListener('DOMContentLoaded', () => {
+            initializeApp(); // Start the app by setting up the auth listener
+
             exportBtn.addEventListener('click', () => {
                 try {
                     const dataStr = JSON.stringify({ habits: allHabits, profile: userProfile }, null, 2);
