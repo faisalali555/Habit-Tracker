@@ -8,9 +8,41 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <!-- FIREBASE SDK UPGRADED TO v11+ (MODULAR) -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNlPgcBvEgkXlpdgpESR4HpmODjmELTYQ", // User's original key
+            authDomain: "habit-tracker-f6492.firebaseapp.com",
+            projectId: "habit-tracker-f6492",
+            storageBucket: "habit-tracker-f6492.appspot.com",
+            messagingSenderId: "383071915072",
+            appId: "1:383071915072:web:1d397c7ff97ab847fee3a5"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        // Make services available globally for the rest of the script
+        window.db = db;
+        window.auth = auth;
+        window.GoogleAuthProvider = GoogleAuthProvider;
+        window.signInWithPopup = signInWithPopup;
+        window.signOut = signOut;
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
+    </script>
+
     <style>
         :root {
             --orange-glow: #ff8c00; --pink-glow: #ff007f; --green-glow: #0af29a;
@@ -87,6 +119,7 @@
     </style>
 </head>
 <body data-theme="default">
+    <!-- HTML Structure remains the same as user provided -->
     <div class="w-full h-screen flex flex-col p-2">
         <div class="flex-shrink-0 flex justify-between items-center mb-2 gap-4">
             <div class="flex items-center gap-2 md:gap-3">
@@ -200,25 +233,11 @@
     <div id="challenges-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col"><h2 class="text-2xl font-bold mb-6 text-center">Challenges</h2><div id="challenges-list" class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar"></div><button id="close-challenges-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
     <div id="store-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col"><h2 class="text-2xl font-bold mb-2 text-center">Rewards Store</h2><p class="text-center mb-4">Your Points: <span id="store-points" class="font-bold">0</span> XP</p><div id="store-items-list" class="flex-grow grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto custom-scrollbar"></div><button id="close-store-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
     <div id="todo-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-lg h-[80vh] flex flex-col"><h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Today's To-Do List</h2><div class="flex-shrink-0 flex gap-2 mb-4"><input type="text" id="new-todo-input" placeholder="Add a new task..." class="flex-grow bg-white/50 p-2 rounded-lg border border-black/10"><button id="add-todo-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Add</button></div><div id="todo-list" class="flex-grow space-y-2 overflow-y-auto pr-2 custom-scrollbar"></div><button id="close-todo-btn" class="interactive-3d mt-4 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg flex-shrink-0">Close</button></div></div>
+    
     <script type="module">
-        const firebaseConfig = {
-            apiKey: "AIzaSyCNlPgcBvEgkXlpdgpESR4HpmODjmELTYQ",
-            authDomain: "habit-tracker-f6492.firebaseapp.com",
-            projectId: "habit-tracker-f6492",
-            storageBucket: "habit-tracker-f6492.appspot.com",
-            messagingSenderId: "383071915072",
-            appId: "1:383071915072:web:1d397c7ff97ab847fee3a5"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-        const GoogleAuthProvider = new firebase.auth.GoogleAuthProvider();
-        const signInWithGoogle = () => {
-            return auth.signInWithPopup(GoogleAuthProvider);
-        };
-        const signOutUser = () => {
-            return auth.signOut();
-        };
+        // This script runs after the Firebase SDK is loaded and initialized.
+        
+        // --- Global Variables ---
         let allHabits = [];
         let userProfile = {};
         let mainFilter = 'active';
@@ -228,38 +247,9 @@
         let focusTimerInterval = null;
         let focusTimerSecondsLeft = 0;
         let currentUser = null;
-        const sanitizeHTML = (str) => {
-            const temp = document.createElement('div');
-            temp.textContent = str;
-            return temp.innerHTML;
-        };
         let sounds;
-        function setupSounds() {
-            sounds = {
-                complete: new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 } }).toDestination(),
-                slip: new Tone.Synth({ oscillator: { type: "sawtooth" }, envelope: { attack: 0.01, decay: 0.5, sustain: 0.1, release: 1 } }).toDestination(),
-                achieve: new Tone.PolySynth(Tone.Synth, { oscillator: { type: "fatsawtooth" }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination(),
-                levelUp: new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle8" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.2, release: 0.4 } }).toDestination(),
-                timerDone: new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.8, sustain: 0.5, release: 1 } }).toDestination(),
-                buy: new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.2, sustain: 0.1, release: 0.2 } }).toDestination(),
-            };
-        }
-        function playSound(type) {
-            if (!sounds) return;
-            try {
-                if (type === 'complete') sounds.complete.triggerAttackRelease("C5", "8n");
-                if (type === 'slip') sounds.slip.triggerAttackRelease("C3", "4n");
-                if (type === 'achieve') sounds.achieve.triggerAttackRelease(["C4", "E4", "G4"], "8n");
-                if (type === 'levelUp') sounds.levelUp.triggerAttackRelease(["C5", "E5", "G5", "C6"], "4n");
-                if (type === 'timerDone') sounds.timerDone.triggerAttackRelease("G5", "2n");
-                if (type === 'buy') sounds.buy.triggerAttackRelease("A5", "16n");
-            } catch (e) { console.error("Sound error:", e); }
-        }
-        document.body.addEventListener('click', async () => {
-            if (Tone.context.state !== 'running') {
-                await Tone.start();
-            }
-        }, { once: true });
+
+        // --- DOM Element Grabbing (same as before) ---
         const clockEl = document.getElementById('clock');
         const habitList = document.getElementById('habit-list'), addHabitForm = document.getElementById('add-habit-form'), habitInput = document.getElementById('habit-input'), habitIdInput = document.getElementById('habit-id-input'), addButtons = document.getElementById('add-buttons'), editButtons = document.getElementById('edit-buttons'), cancelEditBtn = document.getElementById('cancel-edit-btn'), loadingState = document.getElementById('loading-state'), habitType = document.getElementById('habit-type'), habitCategory = document.getElementById('habit-category'), habitGoal = document.getElementById('habit-goal'), habitDuration = document.getElementById('habit-duration'), habitRoutine = document.getElementById('habit-routine'), quitHabitCostsEl = document.getElementById('quit-habit-costs'), habitCostInput = document.getElementById('habit-cost'), habitTimeWastedInput = document.getElementById('habit-time-wasted'), habitDifficulty = document.getElementById('habit-difficulty');
         const confirmModal = document.getElementById('confirm-modal'), modalText = document.getElementById('modal-text'), confirmYesBtn = document.getElementById('confirm-yes'), confirmNoBtn = document.getElementById('confirm-no'), confirmButtonsEl = document.getElementById('confirm-buttons');
@@ -281,13 +271,14 @@
         const storeModal = document.getElementById('store-modal'), storeBtn = document.getElementById('store-btn'), closeStoreBtn = document.getElementById('close-store-btn'), storeItemsList = document.getElementById('store-items-list'), storePointsEl = document.getElementById('store-points');
         const todoModal = document.getElementById('todo-modal'), todoBtn = document.getElementById('todo-btn'), closeTodoBtn = document.getElementById('close-todo-btn'), todoListEl = document.getElementById('todo-list'), newTodoInput = document.getElementById('new-todo-input'), addTodoBtn = document.getElementById('add-todo-btn');
         const googleSigninBtn = document.getElementById('google-signin-btn'), userProfileEl = document.getElementById('user-profile'), userAvatarEl = document.getElementById('user-avatar'), userNameEl = document.getElementById('user-name'), signoutBtn = document.getElementById('signout-btn');
-        const getYYYYMMDD = (date) => {
-            const d = new Date(date);
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+
+        // --- Utility Functions (mostly unchanged) ---
+        const sanitizeHTML = (str) => {
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
         };
+        const getYYYYMMDD = (date) => new Date(date).toISOString().split('T')[0];
         const getWeekId = (date) => {
             const d = new Date(date.valueOf());
             d.setHours(0, 0, 0, 0);
@@ -323,16 +314,49 @@
             }
             return null;
         };
+        function setupSounds() {
+             sounds = {
+                 complete: new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 } }).toDestination(),
+                 slip: new Tone.Synth({ oscillator: { type: "sawtooth" }, envelope: { attack: 0.01, decay: 0.5, sustain: 0.1, release: 1 } }).toDestination(),
+                 achieve: new Tone.PolySynth(Tone.Synth, { oscillator: { type: "fatsawtooth" }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination(),
+                 levelUp: new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle8" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.2, release: 0.4 } }).toDestination(),
+                 timerDone: new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.8, sustain: 0.5, release: 1 } }).toDestination(),
+                 buy: new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.2, sustain: 0.1, release: 0.2 } }).toDestination(),
+             };
+        }
+        function playSound(type) {
+             if (!sounds) return;
+             try {
+                 if (type === 'complete') sounds.complete.triggerAttackRelease("C5", "8n");
+                 if (type === 'slip') sounds.slip.triggerAttackRelease("C3", "4n");
+                 if (type === 'achieve') sounds.achieve.triggerAttackRelease(["C4", "E4", "G4"], "8n");
+                 if (type === 'levelUp') sounds.levelUp.triggerAttackRelease(["C5", "E5", "G5", "C6"], "4n");
+                 if (type === 'timerDone') sounds.timerDone.triggerAttackRelease("G5", "2n");
+                 if (type === 'buy') sounds.buy.triggerAttackRelease("A5", "16n");
+             } catch (e) { console.error("Sound error:", e); }
+        }
+        document.body.addEventListener('click', async () => {
+             if (Tone.context.state !== 'running') {
+                 await Tone.start();
+             }
+        }, { once: true });
+        
+        // --- Data Handling (REWRITTEN & FIXED) ---
         async function saveData() {
+            // If not logged in, save to local storage
             if (!currentUser) {
                 try {
                     localStorage.setItem('glowHabits_local', JSON.stringify({ habits: allHabits, profile: userProfile }));
-                } catch (e) { console.error("Error saving local data:", e); }
+                } catch (e) { 
+                    console.error("Error saving local data:", e); 
+                    showAlertModal("Could not save data locally. Your browser might be in private mode or storage is full.");
+                }
                 return;
             }
+            // If logged in, save to Firestore
             try {
-                const userDocRef = db.collection('users').doc(currentUser.uid);
-                await userDocRef.set({
+                const userDocRef = window.doc(window.db, 'users', currentUser.uid);
+                await window.setDoc(userDocRef, {
                     habits: allHabits,
                     profile: userProfile
                 });
@@ -341,60 +365,136 @@
                 showAlertModal("Could not save data to the cloud.");
             }
         }
+
         async function loadData() {
             loadingState.style.display = 'block';
             habitList.innerHTML = '';
+            
             const defaultProfile = { achievements: [], points: 0, level: 1, lastVisitDate: null, routines: [], activeChallenges: [], unlockedRewards: { theme: 'default' }, todos: [], quitPasses: 2, lastPassReset: getYYYYMMDD(new Date()) };
+            
+            // Try to get local data first, as it might need merging
             const localDataString = localStorage.getItem('glowHabits_local');
             const localData = localDataString ? JSON.parse(localDataString) : null;
+
             if (!currentUser) {
+                // Case 1: User is NOT logged in. Use local data only.
                 if (localData) {
                     allHabits = localData.habits || [];
                     userProfile = { ...defaultProfile, ...(localData.profile || {}) };
                 } else {
-                    resetLocalData();
+                    resetAppData();
                 }
                 initializeAppUI();
                 return;
             }
-            const userDocRef = db.collection('users').doc(currentUser.uid);
+
+            // Case 2: User IS logged in. Handle cloud data and potential merging.
+            const userDocRef = window.doc(window.db, 'users', currentUser.uid);
             try {
-                const doc = await userDocRef.get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    allHabits = data.habits || [];
-                    userProfile = { ...defaultProfile, ...(data.profile || {}) };
-                    if (localDataString) {
-                        localStorage.removeItem('glowHabits_local');
+                const docSnap = await window.getDoc(userDocRef);
+                
+                if (docSnap.exists()) {
+                    // Subcase 2a: Cloud document exists.
+                    const cloudData = docSnap.data();
+                    const cloudHabits = cloudData.habits || [];
+                    userProfile = { ...defaultProfile, ...(cloudData.profile || {}) };
+
+                    // *** MERGE LOGIC ***
+                    // Check if local data also exists and needs merging.
+                    if (localData && localData.habits && localData.habits.length > 0) {
+                        const localHabits = localData.habits;
+                        const cloudHabitIds = new Set(cloudHabits.map(h => h.id));
+                        const habitsToMerge = localHabits.filter(localHabit => !cloudHabitIds.has(localHabit.id));
+
+                        if (habitsToMerge.length > 0) {
+                            allHabits = [...cloudHabits, ...habitsToMerge];
+                            showAlertModal("Aap ki local habits aap ke cloud account mein merge kar di gayi hein.");
+                        } else {
+                            allHabits = cloudHabits;
+                        }
+                        
+                        await saveData(); // Save the potentially merged data back to the cloud
+                        localStorage.removeItem('glowHabits_local'); // Clean up local data after successful merge
+                    } else {
+                        // No local data to merge, just use cloud data.
+                        allHabits = cloudHabits;
                     }
                 } else {
+                    // Subcase 2b: New cloud user. Check if they have local data to upload.
                     if (localData && localData.habits && localData.habits.length > 0) {
                         allHabits = localData.habits || [];
                         userProfile = { ...defaultProfile, ...(localData.profile || {}) };
-                        await saveData();
-                        showAlertModal("Welcome! Your previous data has been synced to your new account.");
+                        await saveData(); // This creates the new document in Firestore
+                        showAlertModal("Khush Amdeed! Aap ki local habits aap ke naye account mein save ho gayi hein.");
                         localStorage.removeItem('glowHabits_local');
                     } else {
-                        resetLocalData();
-                        await saveData();
+                        // No cloud data and no local data, so start fresh.
+                        resetAppData();
+                        await saveData(); // Create an empty document for the new user
                     }
                 }
             } catch (error) {
                 console.error("Error loading data from Firestore:", error);
-                showAlertModal("Could not connect to the cloud. Using local data for now. Please check your internet connection.");
+                showAlertModal("Cloud se connect nahi ho saka. Offline mode istemal kiya ja raha hai.");
+                // Fallback to local data if cloud fails
                 if (localData) {
                     allHabits = localData.habits || [];
                     userProfile = { ...defaultProfile, ...(localData.profile || {}) };
                 } else {
-                    resetLocalData();
+                    resetAppData();
                 }
             }
+            
             initializeAppUI();
         }
-        function resetLocalData() {
+
+        function resetAppData() {
             allHabits = [];
             userProfile = { achievements: [], points: 0, level: 1, lastVisitDate: null, routines: [], activeChallenges: [], unlockedRewards: { theme: 'default' }, todos: [], quitPasses: 2, lastPassReset: getYYYYMMDD(new Date()) };
         }
+
+        // --- Auth Handling (REWRITTEN for modular SDK) ---
+        const signInWithGoogle = () => {
+            const provider = new window.GoogleAuthProvider();
+            return window.signInWithPopup(window.auth, provider);
+        };
+        
+        const signOutUser = () => {
+            return window.signOut(window.auth);
+        };
+
+        window.onAuthStateChanged(window.auth, async (user) => {
+            if (user) {
+                // User is signed in
+                currentUser = user;
+                googleSigninBtn.classList.add('hidden');
+                userProfileEl.classList.remove('hidden');
+                userProfileEl.classList.add('flex');
+                userNameEl.textContent = user.displayName;
+                userAvatarEl.src = user.photoURL;
+                await loadData(); // Load data after user is confirmed
+            } else {
+                // User is signed out
+                currentUser = null;
+                googleSigninBtn.classList.remove('hidden');
+                userProfileEl.classList.add('hidden');
+                userProfileEl.classList.remove('flex');
+                await loadData(); // Load local data
+            }
+        });
+
+        googleSigninBtn.addEventListener('click', () => {
+            signInWithGoogle().catch(error => {
+                console.error("Google Sign-In Error:", error);
+                showAlertModal(`Error: ${error.message}`);
+            });
+        });
+
+        signoutBtn.addEventListener('click', () => {
+            signOutUser();
+        });
+
+        // --- The rest of your application logic (unchanged unless necessary) ---
         const POINTS_CONFIG = { COMPLETE: 10, STREAK_BONUS: 50, ACHIEVEMENT: 100, SLIP: -20, SKIP: -2, TODO: 3 };
         const DIFFICULTY_MULTIPLIERS = { easy: 0.8, medium: 1.0, hard: 1.5 };
         const getLevelForPoints = (points) => Math.floor(Math.sqrt(Math.max(0, points)) / 10) + 1;
@@ -1041,10 +1141,10 @@
                                 const wasCompleted = (habit.completions || {})[periodIdForCheckDate];
                                 const wasSkipped = (habit.skips || {})[periodIdForCheckDate];
                                  if (!wasCompleted && !wasSkipped) {
-                                    if (!habit.skips) habit.skips = {};
-                                    habit.skips[periodIdForCheckDate] = { date: checkDateStr, auto: true };
-                                    skippedCount++;
-                                }
+                                     if (!habit.skips) habit.skips = {};
+                                     habit.skips[periodIdForCheckDate] = { date: checkDateStr, auto: true };
+                                     skippedCount++;
+                                 }
                             }
                         }
                     });
@@ -1249,40 +1349,14 @@
             saveData();
             renderTodos();
         });
-        googleSigninBtn.addEventListener('click', () => {
-            signInWithGoogle().catch(error => {
-                console.error("Google Sign-In Error:", error);
-                showAlertModal(`Error: ${error.message}`);
-            });
-        });
-        signoutBtn.addEventListener('click', () => {
-            signOutUser();
-        });
-        auth.onAuthStateChanged(async user => {
-            if (user) {
-                currentUser = user;
-                googleSigninBtn.classList.add('hidden');
-                userProfileEl.classList.remove('hidden');
-                userProfileEl.classList.add('flex');
-                userNameEl.textContent = user.displayName;
-                userAvatarEl.src = user.photoURL;
-                await loadData();
-            } else {
-                currentUser = null;
-                googleSigninBtn.classList.remove('hidden');
-                userProfileEl.classList.add('hidden');
-                userProfileEl.classList.remove('flex');
-                await loadData();
-            }
-        });
         async function handleQuitSlip(habit) {
             playSound('slip');
             if (userProfile.quitPasses > 0) {
                  const usePass = await showConfirmModal(`You slipped on "${habit.name}". Use one of your ${userProfile.quitPasses} passes to avoid penalty?`);
                  if (usePass) {
-                    userProfile.quitPasses--;
-                    showAlertModal(`Pass used. You have ${userProfile.quitPasses} remaining.`);
-                    return;
+                     userProfile.quitPasses--;
+                     showAlertModal(`Pass used. You have ${userProfile.quitPasses} remaining.`);
+                     return;
                  }
             }
             const multiplier = DIFFICULTY_MULTIPLIERS[habit.difficulty || 'medium'];
@@ -1371,7 +1445,7 @@
                            if (await showConfirmModal("Importing will overwrite current data. Are you sure?")) {
                                 allHabits = data.habits;
                                 userProfile = data.profile;
-                                saveData();
+                                await saveData();
                                 document.location.reload();
                            }
                         } else {
@@ -1389,4 +1463,3 @@
     </script>
 </body>
 </html>
-�
