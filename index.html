@@ -124,7 +124,7 @@
         <div class="flex-shrink-0 flex justify-between items-center mb-2 gap-4">
             <div class="flex items-center gap-2 md:gap-3">
                 <div id="clock-widget" class="top-glass-widget interactive-3d px-4 py-2 flex items-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-500"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-500"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                     <div id="clock" class="text-sm font-medium"></div>
                 </div>
                 <button id="todo-btn" title="Daily To-Do List" class="interactive-3d p-3 rounded-full bg-white/40 hover:bg-white/60 transition-all text-xl">✔️</button>
@@ -277,7 +277,7 @@
             return temp.innerHTML;
         };
         
-        // **FIXED**: This function is now timezone-safe and correctly formats the date.
+        // **FIXED**: This function is now timezone-safe and correctly formats the date from a Date object.
         const getYYYYMMDD = (date) => {
             const d = new Date(date);
             const year = d.getFullYear();
@@ -305,9 +305,10 @@
             let year, month, day, week;
             if (type === 'daily') {
                 [year, month, day] = periodId.split('-').map(Number);
-                const date = new Date(year, month - 1, day);
-                date.setDate(date.getDate() - 1);
-                return getYYYYMMDD(date);
+                // Use UTC date to avoid timezone shifts when calculating previous day
+                const date = new Date(Date.UTC(year, month - 1, day));
+                date.setUTCDate(date.getUTCDate() - 1);
+                return date.toISOString().split('T')[0];
             } else if (type === 'weekly') {
                 [year, week] = periodId.split('-W').map(Number);
                 const date = new Date(year, 0, 1 + (week - 1) * 7);
@@ -427,8 +428,8 @@
                 }
             } catch (error) {
                 console.error("Error loading data from Firestore:", error);
-                // This error is now less likely to show incorrectly.
-                showAlertModal("Could not connect to the cloud. Using offline mode for now.");
+                showAlertModal("Could not connect to the cloud. Please check your internet connection.");
+                // Fallback to local data if cloud fails, but do not reset data
                 if (localData) {
                     allHabits = localData.habits || [];
                     userProfile = { ...defaultProfile, ...(localData.profile || {}) };
@@ -752,16 +753,22 @@
                     for (let i = 0; i < allPeriodIds.length; i++) {
                         const currentPeriod = allPeriodIds[i];
                         const prevPeriod = i > 0 ? allPeriodIds[i-1] : null;
-                        const expectedPrev = getPreviousPeriodId(currentPeriod, type);
-
+                        
                         if (completions[currentPeriod]) {
-                            if (prevPeriod && (prevPeriod === expectedPrev)) {
-                                tempStreak++;
-                            } else {
+                            // If it's the first one, streak is 1
+                            if (i === 0) {
                                 tempStreak = 1;
+                            } else {
+                                const expectedPrev = getPreviousPeriodId(currentPeriod, type);
+                                if (prevPeriod === expectedPrev) {
+                                    tempStreak++;
+                                } else {
+                                    tempStreak = 1;
+                                }
                             }
                         } else if (skips[currentPeriod]) {
-                            if (!prevPeriod || (prevPeriod !== expectedPrev)) {
+                            const expectedPrev = getPreviousPeriodId(currentPeriod, type);
+                            if (!prevPeriod || prevPeriod !== expectedPrev) {
                                 tempStreak = 0;
                             }
                         }
@@ -1132,22 +1139,22 @@
             const lastVisitDate = userProfile.lastVisitDate;
             if (lastVisitDate && lastVisitDate !== todayStr) {
                 let skippedCount = 0;
-                let currentDate = new Date(lastVisitDate);
-                let endDate = new Date(todayStr);
-                while(currentDate < endDate) {
+                let currentDate = new Date(lastVisitDate + 'T00:00:00');
+                let endDate = new Date(todayStr + 'T00:00:00');
+                currentDate.setDate(currentDate.getDate() + 1); 
+                
+                while(currentDate <= endDate) {
                     const checkDateStr = getYYYYMMDD(currentDate);
                      allHabits.forEach(habit => {
                         if (!habit.isArchived && habit.habitGoal === 'build') {
                             const periodIdForCheckDate = getPeriodId(habit.type, currentDate);
-                            if (new Date(checkDateStr) < new Date(todayStr)) {
-                                const wasCompleted = (habit.completions || {})[periodIdForCheckDate];
-                                const wasSkipped = (habit.skips || {})[periodIdForCheckDate];
-                                 if (!wasCompleted && !wasSkipped) {
-                                     if (!habit.skips) habit.skips = {};
-                                     habit.skips[periodIdForCheckDate] = { date: checkDateStr, auto: true };
-                                     skippedCount++;
-                                 }
-                            }
+                            const wasCompleted = (habit.completions || {})[periodIdForCheckDate];
+                            const wasSkipped = (habit.skips || {})[periodIdForCheckDate];
+                             if (!wasCompleted && !wasSkipped) {
+                                 if (!habit.skips) habit.skips = {};
+                                 habit.skips[periodIdForCheckDate] = { date: checkDateStr, auto: true };
+                                 skippedCount++;
+                             }
                         }
                     });
                     currentDate.setDate(currentDate.getDate() + 1);
