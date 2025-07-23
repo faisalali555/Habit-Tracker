@@ -3,46 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glow Habit Tracker - Advanced Edition</title>
+    <title>Glow Habit Tracker - Local Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     
-    <!-- FIREBASE SDK v11+ (MODULAR) -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCNlPgcBvEgkXlpdgpESR4HpmODjmELTYQ", // User's original key
-            authDomain: "habit-tracker-f6492.firebaseapp.com",
-            projectId: "habit-tracker-f6492",
-            storageBucket: "habit-tracker-f6492.appspot.com",
-            messagingSenderId: "383071915072",
-            appId: "1:383071915072:web:1d397c7ff97ab847fee3a5"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        
-        // Make services available globally for the rest of the script
-        window.db = db;
-        window.auth = auth;
-        window.GoogleAuthProvider = GoogleAuthProvider;
-        window.signInWithPopup = signInWithPopup;
-        window.signOut = signOut;
-        window.onAuthStateChanged = onAuthStateChanged;
-        window.doc = doc;
-        window.setDoc = setDoc;
-        window.getDoc = getDoc;
-    </script>
-
     <style>
         :root {
             --orange-glow: #ff8c00; --pink-glow: #ff007f; --green-glow: #0af29a;
@@ -119,7 +85,6 @@
     </style>
 </head>
 <body data-theme="default">
-    <!-- HTML Structure remains the same -->
     <div class="w-full h-screen flex flex-col p-2">
         <div class="flex-shrink-0 flex justify-between items-center mb-2 gap-4">
             <div class="flex items-center gap-2 md:gap-3">
@@ -138,21 +103,9 @@
                 <button id="settings-btn" title="Settings" class="interactive-3d p-3 rounded-full bg-white/40 hover:bg-white/60 transition-all text-xl">⚙️</button>
                 <div id="gamification-widget" class="top-glass-widget interactive-3d px-4 py-2 text-sm"></div>
                 <button id="store-btn" title="Rewards Store" class="interactive-3d p-3 rounded-full bg-white/40 hover:bg-white/60 transition-all text-xl">🛍️</button>
-                <div id="auth-section" class="top-glass-widget interactive-3d p-2">
-                    <button id="google-signin-btn" class="flex items-center gap-2 bg-white/50 hover:bg-white/80 rounded-full px-4 py-2 text-sm font-semibold">
-                        <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C42.022,36.218,44,30.561,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
-                        <span>Sign in with Google</span>
-                    </button>
-                    <div id="user-profile" class="hidden items-center gap-3">
-                        <img id="user-avatar" class="w-8 h-8 rounded-full" src="" alt="User Avatar">
-                        <span id="user-name" class="text-sm font-semibold"></span>
-                        <button id="signout-btn" class="p-2 rounded-full bg-red-200 hover:bg-red-300" title="Sign Out">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                        </button>
-                    </div>
                 </div>
-            </div>
         </div>
+
         <div id="main-container" class="glass-container flex-grow flex flex-col p-6 md:p-8 overflow-hidden">
             <header class="flex-shrink-0 mb-2 text-center">
                 <h1 class="text-4xl md:text-5xl font-bold">Glow Habit Tracker</h1>
@@ -191,39 +144,34 @@
                 </form>
             </div>
             <div id="habit-list" class="flex-grow space-y-3 overflow-y-auto pr-2 custom-scrollbar">
-                 <div id="loading-state" class="text-center text-gray-600 py-8"><p>Loading your habits...</p></div>
+                <div id="loading-state" class="text-center text-gray-600 py-8"><p>Loading your habits...</p></div>
             </div>
         </div>
     </div>
+    
     <div id="confirm-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-6 w-full max-w-sm text-center"><p id="modal-text" class="mb-6"></p><div id="confirm-buttons" class="flex justify-center gap-4"><button id="confirm-yes" class="interactive-3d bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg">Yes</button><button id="confirm-no" class="interactive-3d bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg">Cancel</button></div></div></div>
     <div id="alert-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-6 w-full max-w-sm text-center"><p id="alert-text" class="mb-6"></p><div class="flex justify-center"><button id="alert-ok" class="interactive-3d bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-8 rounded-lg">OK</button></div></div></div>
-    <div id="settings-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-md"><h2 class="text-2xl font-bold mb-6 text-center">Settings</h2><h3 class="text-lg font-semibold mb-3 text-orange-500">Data Management</h3><div class="flex flex-wrap gap-3 mb-6"><button id="export-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Export JSON</button><label class="interactive-3d bg-blue-500/80 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg cursor-pointer">Import JSON<input type="file" id="import-input" class="hidden" accept=".json"></label></div><h3 class="text-lg font-semibold mb-3 text-orange-500">Notifications</h3><div class="flex items-center gap-4 bg-white/20 p-3 rounded-lg"><p>Status: <span id="notification-status" class="font-bold">Unknown</span></p><button id="request-notify-permission-btn" class="interactive-3d bg-orange-500/80 hover:bg-orange-500 text-white font-bold py-1 px-3 rounded-lg hidden">Request Permission</button></div><button id="close-settings-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
-    <div id="achievements-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl"><h2 class="text-2xl font-bold mb-6 text-center">Achievements</h2><div id="achievements-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[60vh] overflow-y-auto custom-scrollbar"></div><button id="close-achievements-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
-    <div id="reports-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4">
-        <div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col">
-            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Your Progress Reports</h2>
-            <div class="flex-grow overflow-y-auto custom-scrollbar px-2">
-                <div class="grid md:grid-cols-2 gap-6 mb-6">
-                    <div class="text-center p-4 rounded-lg bg-white/20"> 
-                        <h3 class="font-semibold mb-2">Completions by Category</h3>
-                        <canvas id="category-chart"></canvas>
-                    </div>
-                    <div class="text-center p-4 rounded-lg bg-white/20">
-                        <h3 class="font-semibold mb-2">Recent Activity</h3>
-                        <canvas id="activity-chart"></canvas>
-                    </div>
-                </div>
-                <div id="analytics-section">
-                    <h3 class="text-xl font-bold text-center mb-4">Success Patterns</h3>
-                    <div id="analytics-content" class="text-center p-4 bg-white/20 rounded-lg min-h-[120px] flex items-center justify-center">
-                    </div>
-                </div>
+    
+    <div id="settings-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4">
+        <div class="glass-container p-6 w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-6 text-center">Settings</h2>
+            <h3 class="text-lg font-semibold mb-3 text-orange-500">Data Management</h3>
+            <div class="flex flex-wrap gap-3 mb-6">
+                <button id="export-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Export JSON</button>
+                <label class="interactive-3d bg-blue-500/80 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg cursor-pointer">Import JSON<input type="file" id="import-input" class="hidden" accept=".json"></label>
+                <button id="delete-all-data-btn" class="interactive-3d bg-red-600/80 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">⚠️ Delete All Data</button>
             </div>
-            <div class="flex-shrink-0 mt-4">
-                 <button id="close-reports-btn" class="interactive-3d w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button>
+            <h3 class="text-lg font-semibold mb-3 text-orange-500">Notifications</h3>
+            <div class="flex items-center gap-4 bg-white/20 p-3 rounded-lg">
+                <p>Status: <span id="notification-status" class="font-bold">Unknown</span></p>
+                <button id="request-notify-permission-btn" class="interactive-3d bg-orange-500/80 hover:bg-orange-500 text-white font-bold py-1 px-3 rounded-lg hidden">Request Permission</button>
             </div>
+            <button id="close-settings-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button>
         </div>
     </div>
+    
+    <div id="achievements-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl"><h2 class="text-2xl font-bold mb-6 text-center">Achievements</h2><div id="achievements-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[60vh] overflow-y-auto custom-scrollbar"></div><button id="close-achievements-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
+    <div id="reports-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col"><h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Your Progress Reports</h2><div class="flex-grow overflow-y-auto custom-scrollbar px-2"><div class="grid md:grid-cols-2 gap-6 mb-6"><div class="text-center p-4 rounded-lg bg-white/20"> <h3 class="font-semibold mb-2">Completions by Category</h3><canvas id="category-chart"></canvas></div><div class="text-center p-4 rounded-lg bg-white/20"><h3 class="font-semibold mb-2">Recent Activity</h3><canvas id="activity-chart"></canvas></div></div><div id="analytics-section"><h3 class="text-xl font-bold text-center mb-4">Success Patterns</h3><div id="analytics-content" class="text-center p-4 bg-white/20 rounded-lg min-h-[120px] flex items-center justify-center"></div></div></div><div class="flex-shrink-0 mt-4"><button id="close-reports-btn" class="interactive-3d w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div></div>
     <div id="history-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col"><h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Habit History</h2><div class="flex-shrink-0 flex flex-wrap gap-3 items-center mb-4 p-2 border-b border-black/10"><input type="date" id="history-date-picker" class="interactive-3d bg-white/50 placeholder-gray-500 border-2 border-transparent focus:border-pink-400/50 focus:ring-0 rounded-xl px-4 py-2 text-sm outline-none"><input type="search" id="history-search-bar" placeholder="Search habits..." class="interactive-3d flex-grow bg-white/50 placeholder-gray-500 border-2 border-transparent focus:border-pink-400/50 focus:ring-0 rounded-xl px-4 py-2 text-sm outline-none"><div id="history-completion-filter-btns" class="bg-black/5 p-1 rounded-full flex items-center"><button data-filter="all" class="filter-btn active font-semibold text-sm px-3 py-1 rounded-full transition-all">All</button><button data-filter="incomplete" class="filter-btn font-semibold text-sm px-3 py-1 rounded-full transition-all">Incomplete</button><button data-filter="completed" class="filter-btn font-semibold text-sm px-3 py-1 rounded-full transition-all">Completed</button><button data-filter="skipped" class="filter-btn font-semibold text-sm px-3 py-1 rounded-full transition-all">Skipped</button></div></div><div id="history-list" class="flex-grow space-y-3 overflow-y-auto pr-2 custom-scrollbar"></div><button id="close-history-btn" class="interactive-3d mt-4 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg flex-shrink-0">Close</button></div></div>
     <div id="reminder-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-6 w-full max-w-sm text-center"><h2 class="text-xl font-bold mb-2">Set Reminder</h2><p id="reminder-habit-name" class="mb-4"></p><input type="hidden" id="reminder-habit-id"><div class="flex flex-col gap-4"><input type="datetime-local" id="reminder-time-input" class="w-full bg-white/50 p-2 rounded-lg border border-black/10" title="Set a specific date and time for a single notification."><button id="save-reminder-btn" class="interactive-3d bg-orange-500/80 hover:bg-orange-500 text-white font-bold py-2 px-4 rounded-lg mt-2">Save Reminder</button><button id="remove-reminder-btn" class="interactive-3d bg-red-500/80 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg">Remove Reminder</button><button id="close-reminder-btn" class="interactive-3d bg-gray-500/80 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Cancel</button></div></div></div>
     <div id="notes-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4"><div class="glass-container p-6 w-full max-w-lg h-[70vh] flex flex-col"><h2 class="text-2xl font-bold mb-2 text-center">Notes for <span id="notes-habit-name"></span></h2><input type="hidden" id="notes-habit-id"><div id="notes-list" class="flex-grow space-y-2 overflow-y-auto pr-2 custom-scrollbar mb-4 border-t border-b py-4 border-black/10"></div><div class="flex-shrink-0 flex gap-2"><input type="text" id="note-input" placeholder="Add a new note..." class="flex-grow bg-white/50 p-2 rounded-lg border border-black/10"><button id="add-note-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Add Note</button></div><button id="close-notes-btn" class="interactive-3d mt-4 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
@@ -233,7 +181,7 @@
     <div id="challenges-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col"><h2 class="text-2xl font-bold mb-6 text-center">Challenges</h2><div id="challenges-list" class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar"></div><button id="close-challenges-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
     <div id="store-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-4xl h-[90vh] flex flex-col"><h2 class="text-2xl font-bold mb-2 text-center">Rewards Store</h2><p class="text-center mb-4">Your Points: <span id="store-points" class="font-bold">0</span> XP</p><div id="store-items-list" class="flex-grow grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto custom-scrollbar"></div><button id="close-store-btn" class="interactive-3d mt-6 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg">Close</button></div></div>
     <div id="todo-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40 p-4"><div class="glass-container p-6 w-full max-w-lg h-[80vh] flex flex-col"><h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Today's To-Do List</h2><div class="flex-shrink-0 flex gap-2 mb-4"><input type="text" id="new-todo-input" placeholder="Add a new task..." class="flex-grow bg-white/50 p-2 rounded-lg border border-black/10"><button id="add-todo-btn" class="interactive-3d bg-green-500/80 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Add</button></div><div id="todo-list" class="flex-grow space-y-2 overflow-y-auto pr-2 custom-scrollbar"></div><button id="close-todo-btn" class="interactive-3d mt-4 w-full bg-pink-500/80 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg flex-shrink-0">Close</button></div></div>
-    
+
     <script type="module">
         // --- Global Variables ---
         let allHabits = [];
@@ -244,7 +192,6 @@
         let activityChart = null;
         let focusTimerInterval = null;
         let focusTimerSecondsLeft = 0;
-        let currentUser = null;
         let sounds;
 
         // --- DOM Element Grabbing ---
@@ -268,16 +215,13 @@
         const challengesModal = document.getElementById('challenges-modal'), challengesBtn = document.getElementById('challenges-btn'), closeChallengesBtn = document.getElementById('close-challenges-btn'), challengesList = document.getElementById('challenges-list');
         const storeModal = document.getElementById('store-modal'), storeBtn = document.getElementById('store-btn'), closeStoreBtn = document.getElementById('close-store-btn'), storeItemsList = document.getElementById('store-items-list'), storePointsEl = document.getElementById('store-points');
         const todoModal = document.getElementById('todo-modal'), todoBtn = document.getElementById('todo-btn'), closeTodoBtn = document.getElementById('close-todo-btn'), todoListEl = document.getElementById('todo-list'), newTodoInput = document.getElementById('new-todo-input'), addTodoBtn = document.getElementById('add-todo-btn');
-        const googleSigninBtn = document.getElementById('google-signin-btn'), userProfileEl = document.getElementById('user-profile'), userAvatarEl = document.getElementById('user-avatar'), userNameEl = document.getElementById('user-name'), signoutBtn = document.getElementById('signout-btn');
-
+        
         // --- Utility Functions ---
         const sanitizeHTML = (str) => {
             const temp = document.createElement('div');
             temp.textContent = str;
             return temp.innerHTML;
         };
-        
-        // **FIXED**: This function is now timezone-safe and correctly formats the date from a Date object.
         const getYYYYMMDD = (date) => {
             const d = new Date(date);
             const year = d.getFullYear();
@@ -285,7 +229,6 @@
             const day = String(d.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         };
-
         const getWeekId = (date) => {
             const d = new Date(date.valueOf());
             d.setHours(0, 0, 0, 0);
@@ -305,7 +248,6 @@
             let year, month, day, week;
             if (type === 'daily') {
                 [year, month, day] = periodId.split('-').map(Number);
-                // Use UTC date to avoid timezone shifts when calculating previous day
                 const date = new Date(Date.UTC(year, month - 1, day));
                 date.setUTCDate(date.getUTCDate() - 1);
                 return date.toISOString().split('T')[0];
@@ -324,12 +266,12 @@
         };
         function setupSounds() {
              sounds = {
-                 complete: new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 } }).toDestination(),
-                 slip: new Tone.Synth({ oscillator: { type: "sawtooth" }, envelope: { attack: 0.01, decay: 0.5, sustain: 0.1, release: 1 } }).toDestination(),
-                 achieve: new Tone.PolySynth(Tone.Synth, { oscillator: { type: "fatsawtooth" }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination(),
-                 levelUp: new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle8" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.2, release: 0.4 } }).toDestination(),
-                 timerDone: new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.8, sustain: 0.5, release: 1 } }).toDestination(),
-                 buy: new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.2, sustain: 0.1, release: 0.2 } }).toDestination(),
+                complete: new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 } }).toDestination(),
+                slip: new Tone.Synth({ oscillator: { type: "sawtooth" }, envelope: { attack: 0.01, decay: 0.5, sustain: 0.1, release: 1 } }).toDestination(),
+                achieve: new Tone.PolySynth(Tone.Synth, { oscillator: { type: "fatsawtooth" }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination(),
+                levelUp: new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle8" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.2, release: 0.4 } }).toDestination(),
+                timerDone: new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.8, sustain: 0.5, release: 1 } }).toDestination(),
+                buy: new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.2, sustain: 0.1, release: 0.2 } }).toDestination(),
              };
         }
         function playSound(type) {
@@ -346,96 +288,34 @@
         }
         
         // --- Data Handling ---
-        async function saveData() {
-            if (!currentUser) {
-                try {
-                    localStorage.setItem('glowHabits_local', JSON.stringify({ habits: allHabits, profile: userProfile }));
-                } catch (e) { 
-                    console.error("Error saving local data:", e); 
-                    showAlertModal("Could not save data locally. Your browser might be in private mode or storage is full.");
-                }
-                return;
-            }
+        function saveData() {
             try {
-                const userDocRef = window.doc(window.db, 'users', currentUser.uid);
-                await window.setDoc(userDocRef, {
-                    habits: allHabits,
-                    profile: userProfile
-                });
-            } catch (error) {
-                console.error("Error saving data to Firestore:", error);
-                showAlertModal("Could not save data to the cloud.");
+                localStorage.setItem('glowHabits_data', JSON.stringify({ habits: allHabits, profile: userProfile }));
+            } catch (e) { 
+                console.error("Error saving local data:", e); 
+                showAlertModal("Could not save data. Your browser might be in private mode or storage is full.");
             }
         }
 
-        async function loadData() {
+        function loadData() {
             loadingState.style.display = 'block';
             habitList.innerHTML = '';
             
             const defaultProfile = { achievements: [], points: 0, level: 1, lastVisitDate: null, routines: [], activeChallenges: [], unlockedRewards: { theme: 'default' }, todos: [], quitPasses: 2, lastPassReset: getYYYYMMDD(new Date()) };
             
-            const localDataString = localStorage.getItem('glowHabits_local');
-            const localData = localDataString ? JSON.parse(localDataString) : null;
-
-            if (!currentUser) {
-                if (localData) {
+            const localDataString = localStorage.getItem('glowHabits_data');
+            
+            if (localDataString) {
+                try {
+                    const localData = JSON.parse(localDataString);
                     allHabits = localData.habits || [];
                     userProfile = { ...defaultProfile, ...(localData.profile || {}) };
-                } else {
+                } catch(e) {
+                    console.error("Error parsing local data:", e);
                     resetAppData();
                 }
-                initializeAppUI();
-                return;
-            }
-
-            const userDocRef = window.doc(window.db, 'users', currentUser.uid);
-            try {
-                const docSnap = await window.getDoc(userDocRef);
-                
-                if (docSnap.exists()) {
-                    const cloudData = docSnap.data();
-                    const cloudHabits = cloudData.habits || [];
-                    userProfile = { ...defaultProfile, ...(cloudData.profile || {}) };
-
-                    if (localData && localData.habits && localData.habits.length > 0) {
-                        const localHabits = localData.habits;
-                        const cloudHabitIds = new Set(cloudHabits.map(h => h.id));
-                        const habitsToMerge = localHabits.filter(localHabit => !cloudHabitIds.has(localHabit.id));
-
-                        if (habitsToMerge.length > 0) {
-                            allHabits = [...cloudHabits, ...habitsToMerge];
-                            showAlertModal("Your local habits have been merged into your cloud account.");
-                        } else {
-                            allHabits = cloudHabits;
-                        }
-                        
-                        await saveData(); 
-                        localStorage.removeItem('glowHabits_local');
-                    } else {
-                        allHabits = cloudHabits;
-                    }
-                } else {
-                    if (localData && localData.habits && localData.habits.length > 0) {
-                        allHabits = localData.habits || [];
-                        userProfile = { ...defaultProfile, ...(localData.profile || {}) };
-                        await saveData(); 
-                        showAlertModal("Welcome! Your local habits have been saved to your new account.");
-                        localStorage.removeItem('glowHabits_local');
-                    } else {
-                        resetAppData();
-                        await saveData(); 
-                    }
-                }
-            } catch (error) {
-                console.error("Error loading data from Firestore:", error);
-                showAlertModal("Could not connect to the cloud. Please check your internet connection.");
-                // Fallback to local data if cloud fails, but do not reset data
-                if (localData) {
-                    allHabits = localData.habits || [];
-                    userProfile = { ...defaultProfile, ...(localData.profile || {}) };
-                } else {
-                    resetAppData();
-                }
+            } else {
+                resetAppData();
             }
             
             initializeAppUI();
@@ -446,47 +326,11 @@
             userProfile = { achievements: [], points: 0, level: 1, lastVisitDate: null, routines: [], activeChallenges: [], unlockedRewards: { theme: 'default' }, todos: [], quitPasses: 2, lastPassReset: getYYYYMMDD(new Date()) };
         }
 
-        // --- Auth Handling ---
-        const signInWithGoogle = () => {
-            const provider = new window.GoogleAuthProvider();
-            return window.signInWithPopup(window.auth, provider);
-        };
-        
-        const signOutUser = () => {
-            return window.signOut(window.auth);
-        };
-
-        googleSigninBtn.addEventListener('click', () => {
-            signInWithGoogle().catch(error => {
-                console.error("Google Sign-In Error:", error);
-                showAlertModal(`Sign-in error: ${error.message}`);
-            });
-        });
-
-        signoutBtn.addEventListener('click', () => {
-            signOutUser();
-        });
-
         // --- Core App Initialization ---
         function initializeApp() {
-            window.onAuthStateChanged(window.auth, async (user) => {
-                if (user) {
-                    currentUser = user;
-                    googleSigninBtn.classList.add('hidden');
-                    userProfileEl.classList.remove('hidden');
-                    userProfileEl.classList.add('flex');
-                    userNameEl.textContent = user.displayName;
-                    userAvatarEl.src = user.photoURL;
-                } else {
-                    currentUser = null;
-                    googleSigninBtn.classList.remove('hidden');
-                    userProfileEl.classList.add('hidden');
-                    userProfileEl.classList.remove('flex');
-                }
-                await loadData();
-            });
+            loadData();
         }
-
+        
         // --- The rest of your application logic ---
         const POINTS_CONFIG = { COMPLETE: 10, STREAK_BONUS: 50, ACHIEVEMENT: 100, SLIP: -20, SKIP: -2, TODO: 3 };
         const DIFFICULTY_MULTIPLIERS = { easy: 0.8, medium: 1.0, hard: 1.5 };
@@ -501,7 +345,7 @@
                 playSound('levelUp');
                 showAlertModal(`LEVEL UP! You've reached Level ${newLevel}!`);
             } else if (newLevel < oldLevel) {
-                 showAlertModal(`Level Down! You've dropped to Level ${newLevel}.`);
+                showAlertModal(`Level Down! You've dropped to Level ${newLevel}.`);
             }
             updateGamificationWidget();
         }
@@ -551,9 +395,9 @@
                         confirmButtonsEl.appendChild(button);
                     });
                 } else {
-                     confirmButtonsEl.innerHTML = `<button id="confirm-yes" class="interactive-3d bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg">Yes</button><button id="confirm-no" class="interactive-3d bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg">Cancel</button>`;
-                     document.getElementById('confirm-yes').onclick = () => { closeModal(confirmModal); resolve(true); };
-                     document.getElementById('confirm-no').onclick = () => { closeModal(confirmModal); resolve(false); };
+                    confirmButtonsEl.innerHTML = `<button id="confirm-yes" class="interactive-3d bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg">Yes</button><button id="confirm-no" class="interactive-3d bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg">Cancel</button>`;
+                    document.getElementById('confirm-yes').onclick = () => { closeModal(confirmModal); resolve(true); };
+                    document.getElementById('confirm-no').onclick = () => { closeModal(confirmModal); resolve(false); };
                 }
                 openModal(confirmModal); 
             }); 
@@ -732,7 +576,7 @@
                 } else {
                     await handleQuitSlip(habit);
                 }
-                await saveData();
+                saveData();
                 renderFilteredHabits(id);
                 handleHabitStacking(habit.id);
             }
@@ -755,7 +599,6 @@
                         const prevPeriod = i > 0 ? allPeriodIds[i-1] : null;
                         
                         if (completions[currentPeriod]) {
-                            // If it's the first one, streak is 1
                             if (i === 0) {
                                 tempStreak = 1;
                             } else {
@@ -1146,17 +989,17 @@
                 while(currentDate <= endDate) {
                     const checkDateStr = getYYYYMMDD(currentDate);
                      allHabits.forEach(habit => {
-                        if (!habit.isArchived && habit.habitGoal === 'build') {
-                            const periodIdForCheckDate = getPeriodId(habit.type, currentDate);
-                            const wasCompleted = (habit.completions || {})[periodIdForCheckDate];
-                            const wasSkipped = (habit.skips || {})[periodIdForCheckDate];
-                             if (!wasCompleted && !wasSkipped) {
-                                 if (!habit.skips) habit.skips = {};
-                                 habit.skips[periodIdForCheckDate] = { date: checkDateStr, auto: true };
-                                 skippedCount++;
-                             }
-                        }
-                    });
+                         if (!habit.isArchived && habit.habitGoal === 'build') {
+                             const periodIdForCheckDate = getPeriodId(habit.type, currentDate);
+                             const wasCompleted = (habit.completions || {})[periodIdForCheckDate];
+                             const wasSkipped = (habit.skips || {})[periodIdForCheckDate];
+                              if (!wasCompleted && !wasSkipped) {
+                                  if (!habit.skips) habit.skips = {};
+                                  habit.skips[periodIdForCheckDate] = { date: checkDateStr, auto: true };
+                                  skippedCount++;
+                              }
+                         }
+                     });
                     currentDate.setDate(currentDate.getDate() + 1);
                 }
                 if (skippedCount > 0) {
@@ -1276,7 +1119,7 @@
                 } else {
                     buttonHtml = `<button data-item-id="${item.id}" class="buy-item-btn w-full font-bold py-2 px-4 rounded-lg ${userProfile.points < item.cost ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-500 text-white'}">Buy (${item.cost} XP)</button>`;
                 }
-                return `<div class="p-4 rounded-lg bg-white/30 flex flex-col text-center"><div class="text-3xl mb-2">${item.type === 'theme' ? '🎨' : '�'}</div><h4 class="font-bold flex-grow">${item.name}</h4><p class="text-xs text-gray-600 mb-4">${item.desc}</p>${buttonHtml}</div>`;
+                return `<div class="p-4 rounded-lg bg-white/30 flex flex-col text-center"><div class="text-3xl mb-2">${item.type === 'theme' ? '🎨' : ''}</div><h4 class="font-bold flex-grow">${item.name}</h4><p class="text-xs text-gray-600 mb-4">${item.desc}</p>${buttonHtml}</div>`;
             }).join('');
         }
         storeItemsList.addEventListener('click', async e => {
@@ -1361,12 +1204,12 @@
         async function handleQuitSlip(habit) {
             playSound('slip');
             if (userProfile.quitPasses > 0) {
-                 const usePass = await showConfirmModal(`You slipped on "${habit.name}". Use one of your ${userProfile.quitPasses} passes to avoid penalty?`);
-                 if (usePass) {
-                     userProfile.quitPasses--;
-                     showAlertModal(`Pass used. You have ${userProfile.quitPasses} remaining.`);
-                     return;
-                 }
+                const usePass = await showConfirmModal(`You slipped on "${habit.name}". Use one of your ${userProfile.quitPasses} passes to avoid penalty?`);
+                if (usePass) {
+                    userProfile.quitPasses--;
+                    showAlertModal(`Pass used. You have ${userProfile.quitPasses} remaining.`);
+                    return;
+                }
             }
             const multiplier = DIFFICULTY_MULTIPLIERS[habit.difficulty || 'medium'];
             addPoints(POINTS_CONFIG.SLIP * multiplier, 'slip');
@@ -1425,7 +1268,7 @@
             }
         }
         document.addEventListener('DOMContentLoaded', () => {
-            initializeApp(); // Start the app by setting up the auth listener
+            initializeApp(); // Start the app
 
             exportBtn.addEventListener('click', () => {
                 try {
@@ -1445,7 +1288,8 @@
                     showAlertModal("Could not export data.");
                 }
             });
-             importInput.addEventListener('change', (event) => {
+
+            importInput.addEventListener('change', (event) => {
                 const file = event.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
@@ -1469,6 +1313,18 @@
                 };
                 reader.readAsText(file);
                 importInput.value = '';
+            });
+
+            // New: Delete all data button functionality
+            const deleteAllDataBtn = document.getElementById('delete-all-data-btn');
+            deleteAllDataBtn.addEventListener('click', async () => {
+                if (await showConfirmModal("This will PERMANENTLY delete all your habits and data. This action cannot be undone. Are you sure?")) {
+                    localStorage.removeItem('glowHabits_data');
+                    showAlertModal("All data has been deleted. The app will now reload.");
+                    setTimeout(() => {
+                        document.location.reload();
+                    }, 1500);
+                }
             });
         });
     </script>
